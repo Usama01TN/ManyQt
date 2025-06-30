@@ -220,8 +220,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ManyQt.tex', 'ManyQt Documentation',
-     u'Aleš Erjavec', 'manual'),
+    (master_doc, 'ManyQt.tex', 'ManyQt Documentation', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
