@@ -31,7 +31,6 @@ test:
     - ManyQt.QtSvg
 
 about:
-  home: https://github.com/ales-erjavec/anyqt/
   license: GPL-3.0
   license_family: GPL3
-  summary: PyQt4/PyQt5 compatibility layer.
+  summary: PyQt/PySide compatibility layer.
