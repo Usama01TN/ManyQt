@@ -23,7 +23,7 @@ pip install git+https://github.com/Usama01TN/manyqt.git@branch-name
 Note: ManyQt itself has no dependencies, but you must have at least one Qt binding installed (PyQt or PySide variant). To install a Qt binding alongside ManyQt:
 
 ```bash
-pip install manyqt pyqt5  # or pyqt6, pyside2, pyside6, etc.
+pip install manyqt pyqt5  # or pyqt6, pyside2, pyside6, etc...
 ```
 
 ---
