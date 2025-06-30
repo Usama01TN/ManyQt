@@ -1,0 +1,3 @@
+recursive-include ManyQt *.py
+include *.txt
+include *.py
