@@ -1,0 +1,37 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: manyqt
+  version: {{ data['version'] }}
+
+source:
+  git_url: ../
+
+build:
+  number: 0
+
+  script:
+    - python setup.py install --single-version-externally-managed --record record.txt
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - pyqt
+
+test:
+  imports:
+    - ManyQt.QtCore
+    - ManyQt.QtGui
+    - ManyQt.QtWidgets
+    - ManyQt.QtNetwork
+    - ManyQt.QtSvg
+
+about:
+  home: https://github.com/ales-erjavec/anyqt/
+  license: GPL-3.0
+  license_family: GPL3
+  summary: PyQt4/PyQt5 compatibility layer.
