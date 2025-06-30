@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 # ManyQt documentation build configuration file, created by
-# sphinx-quickstart on Wed Apr  6 10:32:15 2016.
+# sphinx-quickstart on 2025.
 #
-# This file is execfile()d with the current directory set to its
+# This file is execfile() with the current directory set to its
 # containing dir.
 #
 # Note that not all possible configuration values are present in this
