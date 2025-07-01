@@ -8,7 +8,7 @@
 
 ### From PyPI (recommended):
 ```bash
-pip install manyqt
+Uploading...
 ```
 
 ### From GitHub (latest development version):
