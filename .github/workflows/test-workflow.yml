@@ -17,60 +17,60 @@ jobs:
       matrix:
         include:
           # Linux
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: 3.7
             test-env: "PyQt5~=5.12.0"
             qt-api: "PyQt5"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
             qt-api: "PyQt5"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: 3.9
             test-env: "PyQt5~=5.15.0"
             qt-api: "PyQt5"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: 3.9
             test-env: "PySide6==6.8.1"
             qt-api: "PySide6"
             extra-system-packages: "glibc-tools"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PyQt5~=5.15.0"
             qt-api: "PyQt5"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PyQt6~=6.2.3 PyQt6-Qt6~=6.2.3"
             qt-api: "PyQt6"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
             qt-api: "PyQt6"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PySide2~=5.15.0"
             qt-api: "PySide2"
 
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
             qt-api: "PyQt6"
             extra-system-packages: "glibc-tools"
 
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
             qt-api: "PyQt6"
             extra-system-packages: "glibc-tools"
 
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             python-version: "3.13"
             test-env: "PySide6~=6.9.1"
             qt-api: "PySide6"
