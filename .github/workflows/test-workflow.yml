@@ -118,27 +118,27 @@ jobs:
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
 
           # Windows
-          - os: windows-2019
+          - os: windows-2025
             python-version: 3.7
             test-env: "PyQt5~=5.12.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: 3.9
             test-env: "PyQt5~=5.15.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: 3.9
             test-env: "PySide6==6.8.1"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.10"
             test-env: "PyQt5~=5.15.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.10"
             test-env: "PyQt6~=6.2.3 PyQt6-Qt6~=6.2.3"
 
@@ -146,19 +146,19 @@ jobs:
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.10"
             test-env: "PySide2~=5.15.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
 
-          - os: windows-2019
+          - os: windows-2025
             python-version: "3.13"
             test-env: "PySide6~=6.9.1"
 
