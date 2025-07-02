@@ -14,7 +14,12 @@ try:
 except:
     from _api import USED_API, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYQT4, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6
 
-if USED_API == QT_API_PYQT5:
+if USED_API == QT_API_PYQT4:
+    try:
+        from PyQt4 import sip as __sip
+    except:
+        import sip as __sip
+elif USED_API == QT_API_PYQT5:
     try:
         from PyQt5 import sip as __sip
     except:
@@ -22,11 +27,6 @@ if USED_API == QT_API_PYQT5:
 elif USED_API == QT_API_PYQT6:
     try:
         from PyQt6 import sip as __sip
-    except:
-        import sip as __sip
-elif USED_API == QT_API_PYQT4:
-    try:
-        from PyQt4 import sip as __sip
     except:
         import sip as __sip
 elif USED_API == QT_API_PYSIDE:
@@ -68,8 +68,64 @@ elif USED_API == QT_API_PYSIDE6:
 else:
     raise ImportError("ManyQt.sip")
 
-if hasattr(__sip, 'wrapInstance') and not hasattr(__sip, 'cast'):
-    __sip.cast = __sip.wrapInstance
-if hasattr(__sip, 'cast') and not hasattr(__sip, 'wrapInstance'):
-    __sip.wrapInstance = __sip.cast
+
+# if hasattr(__sip, 'wrapInstance') and not hasattr(__sip, 'cast'):
+#     __sip.cast = __sip.wrapInstance
+# if hasattr(__sip, 'cast') and not hasattr(__sip, 'wrapInstance'):
+#     __sip.wrapInstance = __sip.cast
+
+if not hasattr(__sip, "cast"):
+    def cast(obj, type_):
+        """
+        :param obj: QObject
+        :param type_: QObject
+        :return: QObject
+        """
+        return __sip.wrapinstance(unwrapinstance(obj), type_)
+
+
+    __sip.cast = cast
+
+def unwrapinstance(obj):
+    """
+    :param obj: QObject
+    :return: QObject
+    """
+    if hasattr(__sip, 'getCppPointer'):
+        addr, = __sip.getCppPointer(obj)
+        return addr
+    return __sip.unwrapInstance(obj)
+
+if not hasattr(__sip, "unwrapinstance"):
+    __sip.unwrapinstance = unwrapinstance
+if not hasattr(__sip, "unwrapInstance"):
+    __sip.unwrapInstance = unwrapinstance
+if not hasattr(__sip, "wrapinstance"):
+    __sip.wrapinstance = __sip.wrapInstance
+if not hasattr(__sip, "wrapInstance"):
+    __sip.wrapInstance = __sip.wrapinstance
+
+
+def isdeleted(obj):
+    """
+    :param obj: QObject
+    :return: bool
+    """
+    if hasattr(__sip, "isdeleted"):
+        return __sip.isdeleted(obj)
+    return not __sip.isValid(obj)
+
+
+if not hasattr(__sip, "ispyowned"):
+    __sip.ispyowned = __sip.ownedByPython
+if not hasattr(__sip, "isdeleted"):
+    __sip.isdeleted = isdeleted
+if not hasattr(__sip, "isdelete"):
+    __sip.isdelete = isdeleted
+if not hasattr(__sip, "deleted"):
+    __sip.deleted = isdeleted
+if not hasattr(__sip, "delete"):
+    __sip.delete = isdeleted
+if not hasattr(__sip, "ispycreated"):
+    __sip.ispycreated = __sip.createdByPython
 modules["ManyQt.sip"] = __sip
