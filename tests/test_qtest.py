@@ -54,7 +54,7 @@ class TestQtTest(TestCase):
         """
         obj = QObject()  # type: QObject
         #obj.deleteLater()
-        self.app.processEvents()  # Let deleteLater complete safely
+        #self.app.processEvents()  # Let deleteLater complete safely
         QTest.qWait(10)  # allow deletion
         self.assertTrue(isdeleted(obj))
 
