@@ -68,4 +68,8 @@ elif USED_API == QT_API_PYSIDE6:
 else:
     raise ImportError("ManyQt.sip")
 
+if hasattr(__sip, 'wrapInstance') and not hasattr(__sip, 'cast'):
+    __sip.cast = __sip.wrapInstance
+if hasattr(__sip, 'cast') and not hasattr(__sip, 'wrapInstance'):
+    __sip.wrapInstance = __sip.cast
 modules["ManyQt.sip"] = __sip
