@@ -688,7 +688,7 @@ pyqtSignal = Signal
 pyqtSlot = Slot
 pyqtProperty = Property
 
-if USED_API == [QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6]:
+if USED_API in [QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6]:
     if dirname(dirname(__file__)) not in path:
         path.append(dirname(dirname(__file__)))
 
@@ -882,6 +882,8 @@ def defined(sys_name):
     :param sys_name: str | unicode
     :return: bool
     """
+    from os import name
+
     Q_OS_CACHE = []  # type: list
     if system().lower() in ['linux', 'darwin', 'freebsd', 'unix']:
         Q_OS_CACHE.append(Q_OS_UNIX)
