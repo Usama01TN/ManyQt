@@ -63,7 +63,8 @@ def fix_pyqt5_QGraphicsItem_itemChange():
         from os.path import dirname
         from sys import path
 
-        path.append(dirname(__file__))
+        if path.append(dirname(__file__)) not in path:
+            path.append(dirname(__file__))
 
         try:
             from .sip import cast
@@ -113,7 +114,8 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
     from os.path import dirname
     from sys import path
 
-    path.append(dirname(__file__))
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
 
     try:
         from ._ctypes import load_qtlib
@@ -136,7 +138,7 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
     from PyQt6.QtGui import QAction
     try:
         from PyQt6.QtWidgets import QMenu
-    except ImportError:
+    except:
         return  # No QtWidgets then no setMenu
     if hasattr(QAction, "setMenu"):
         return
@@ -185,7 +187,8 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
     from os.path import dirname
     from sys import path
 
-    path.append(dirname(__file__))
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
 
     try:
         from ._ctypes import load_qtlib
@@ -210,7 +213,7 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
     from PySide6.QtGui import QAction
     try:
         from PySide6.QtWidgets import QMenu
-    except ImportError:
+    except:
         return  # No QtWidgets then no setMenu.
     if hasattr(QAction, "setMenu"):
         return
@@ -364,7 +367,8 @@ def fix_pyqt5_missing_enum_members(namespace):
     from enum import Enum
     from sys import path
 
-    path.append(dirname(__file__))
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
 
     try:
         from .sip import simplewrapper, wrappertype
@@ -413,13 +417,117 @@ def fix_pyside_QActionEvent_action(namespace):
     from ctypes import Structure, c_void_p, c_ushort
     try:
         from PySide2.shiboken2 import wrapInstance, getCppPointer  # PySide2 < 5.12.0
-    except ImportError:
-        from shiboken2 import wrapInstance, getCppPointer
+    except:
+        try:
+            from shiboken2 import wrapInstance, getCppPointer
+        except:
+            from shiboken2.Shiboken import wrapInstance, getCppPointer
 
     from os.path import dirname
     from sys import path
 
-    path.append(dirname(__file__))
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
+
+    try:
+        from .QtGui import QActionEvent
+        from .QtWidgets import QAction
+    except:
+        from QtGui import QActionEvent
+        from QtWidgets import QAction
+
+    class _QActionEvent(Structure):
+        """
+        _QActionEvent structure class.
+        """
+        _fields_ = [
+            ("vtable", c_void_p),
+            # QEvent
+            ("d", c_void_p),  # private data ptr
+            ("t", c_ushort),  # type
+            ("_flags", c_ushort),  # various flags
+            # QActionEvent
+            ("act", c_void_p),  # QAction *act
+            ("bef", c_void_p),  # QAction *bef
+        ]
+
+        def action(self):
+            """
+            :return: QAction
+            """
+            return from_address(self.act, QAction)
+
+        def before(self):
+            """
+            :return: QAction
+            """
+            return from_address(self.bef, QAction)
+
+        @classmethod
+        def from_event(cls, event):
+            """
+            :param event: QActionEvent
+            :return: QActionEvent
+            """
+            p, = getCppPointer(event)
+            return cls.from_address(p)
+
+    def from_address(address, type_):
+        """
+        :param address: int
+        :param type_: any
+        :return: QAction | None
+        """
+        return wrapInstance(address, type_) if address else None
+
+    def action(self):
+        """
+        Returns the action associated with this event.
+        :param self: QActionEvent
+        :return: QAction
+        """
+        ev = _QActionEvent.from_event(self)
+        return ev.action()
+
+    def before(self):
+        """
+        Returns the action that precedes the current action in the application's action list.
+        :param self: QActionEvent
+        :return: QAction
+        """
+        ev = _QActionEvent.from_event(self)
+        return ev.before()
+
+    if not hasattr(QActionEvent, "action"):
+        QActionEvent.action = action
+    if not hasattr(QActionEvent, "before"):
+        QActionEvent.before = before
+
+
+def fix_pyside6_QActionEvent_action(namespace):
+    """
+    Fixes the `action` and `before` methods for `QActionEvent` in PySide2.
+    This function adds the `action` and `before` methods to the `QActionEvent` class if they are not already present.
+    It uses ctypes to access the underlying C++ structures and shiboken2 to wrap the C++ pointers.
+    :param namespace: (dict[str | unicode, any]) The namespace dictionary where the `QActionEvent` class is defined.
+    :return: None
+    """
+    if namespace.get("__name__") != "ManyQt.QtGui":
+        return
+    from ctypes import Structure, c_void_p, c_ushort
+    try:
+        from PySide6.shiboken6 import wrapInstance, getCppPointer  # PySide2 < 5.12.0
+    except:
+        try:
+            from shiboken6 import wrapInstance, getCppPointer
+        except:
+            from shiboken6.Shiboken import wrapInstance, getCppPointer
+
+    from os.path import dirname
+    from sys import path
+
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
 
     try:
         from .QtGui import QActionEvent
@@ -648,7 +756,7 @@ GLOBAL_FIXES = {
         fix_qstandarditem_insert_row,
     ],
     "pyside6": [
-        fix_pyside_QActionEvent_action,
+        fix_pyside6_QActionEvent_action,
         fix_pyside6_exec,
         fix_qstandarditem_insert_row,
         fix_pyside6_unscoped_enum,
@@ -665,7 +773,8 @@ def global_fixes(namespace):
     from os.path import dirname
     from sys import path
 
-    path.append(dirname(__file__))
+    if path.append(dirname(__file__)) not in path:
+        path.append(dirname(__file__))
 
     try:
         from ._api import USED_API
