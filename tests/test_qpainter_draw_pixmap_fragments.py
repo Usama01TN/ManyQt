@@ -56,19 +56,8 @@ class TestDrawPixmapFragments(TestCase):
         p = QPainter(img)  # type: QPainter
         pix = QPixmap(10, 10)  # type: QPixmap
         pix.fill(Qt.red)
-        frgmts = [
-            QPainter.PixmapFragment.create(
-                QPointF(25, 25),
-                QRectF(0, 0, 10, 10),
-                5., 5.,
-            ),
-            QPainter.PixmapFragment.create(
-                QPointF(75, 75),
-                QRectF(0, 0, 10, 10),
-                5., 5.,
-            )
-        ]  # type list[PixmapFragment]
-        p.drawPixmapFragments(frgmts, pix)
+        p.drawPixmapFragments(QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.), 1, pix)
+        p.drawPixmapFragments(QPainter.PixmapFragment.create(QPointF(75, 75), QRectF(0, 0, 10, 10), 5., 5.), 1, pix)
         p.end()
         self.assertEqual(QColor(img.pixel(10, 10)), QColor(Qt.red))
         self.assertEqual(QColor(img.pixel(80, 80)),  QColor(Qt.red))
