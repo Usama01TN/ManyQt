@@ -43,6 +43,8 @@ class TestQtTest(TestCase):
         """
         :return:
         """
+        if cls.app:
+            cls.app.quit()
         cls.app = None  # type: QApplication | None
         super(TestQtTest, cls).tearDownClass()
 
@@ -52,7 +54,8 @@ class TestQtTest(TestCase):
         """
         obj = QObject()  # type: QObject
         obj.deleteLater()
-        QTest.qWait(0)
+        self.app.processEvents()  # Let deleteLater complete safely
+        QTest.qWait(10)  # allow deletion
         self.assertTrue(isdeleted(obj))
 
     def testQWaitFor(self):
