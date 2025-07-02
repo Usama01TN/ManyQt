@@ -67,4 +67,8 @@ elif USED_API == QT_API_PYSIDE6:
 else:
     raise ImportError("ManyQt.shiboken")
 
+if hasattr(__shiboken, 'wrapInstance') and not hasattr(__shiboken, 'cast'):
+    __shiboken.cast = __shiboken.wrapInstance
+if hasattr(__shiboken, 'cast') and not hasattr(__shiboken, 'wrapInstance'):
+    __shiboken.wrapInstance = __shiboken.cast
 modules["ManyQt.shiboken"] = __shiboken
