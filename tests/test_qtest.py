@@ -53,7 +53,7 @@ class TestQtTest(TestCase):
         :return:
         """
         obj = QObject()  # type: QObject
-        obj.deleteLater()
+        #obj.deleteLater()
         self.app.processEvents()  # Let deleteLater complete safely
         QTest.qWait(10)  # allow deletion
         self.assertTrue(isdeleted(obj))
