@@ -655,19 +655,19 @@ if USED_API == QT_API_PYSIDE2:
         """
 
         # QSettings.value does not have `type` type in PySide2
-        def value(self, key, defaultValue=None, type_=None):
+        def value(self, key, defaultValue=None, type=None):
             """
             Returns the value for setting key. If the setting doesn't exist, returns defaultValue.
             :param key: QByteArray | bytes | bytearray | memoryview | str | None
             :param defaultValue: any | None
-            :param type_: type | None
+            :param type: type | None
             :return: any | None
             """
             if not self.contains(key):
                 return defaultValue
             value = super(QSettings, self).value(key)
-            if type_ is not None:
-                value = self.__qvariant_cast(value, type_)
+            if type is not None:
+                value = self.__qvariant_cast(value, type)
                 if value is None:
                     value = defaultValue
             return value
