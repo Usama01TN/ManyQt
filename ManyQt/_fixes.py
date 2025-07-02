@@ -304,7 +304,16 @@ def fix_pyside6_unscoped_enum(namespace):
     :param namespace: dict[str | unicode | QString, any]
     :return:
     """
-    from shiboken6 import wrapInstance
+    try:
+        from shiboken6 import wrapInstance
+    except:
+        try:
+            from PySide6.shiboken6 import wrapInstance
+        except:
+            try:
+                from PySide6.shiboken6.Shiboken import wrapInstance
+            except:
+                from shiboken6.Shiboken import wrapInstance
 
     def members(enum):
         """
@@ -340,7 +349,7 @@ def fix_pyside6_unscoped_enum(namespace):
         return not any(name in namespace and namespace[name] is not value for name, value in members(enum))
 
     for _, class_ in list(namespace.items()):
-        if isinstance(class_, wrapInstance):
+        if hasattr(class_, '__dict__'):
             for name, value in list(class_.__dict__.items()):
                 if is_unscoped_enum(value):
                     if can_lift(class_, value):
