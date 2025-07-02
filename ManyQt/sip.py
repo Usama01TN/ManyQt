@@ -50,12 +50,21 @@ elif USED_API == QT_API_PYSIDE2:
             import shiboken2 as __sip
 elif USED_API == QT_API_PYSIDE6:
     try:
-        from PySide6 import sip as __sip
+        from shiboken6 import Shiboken as __sip
     except:
         try:
-            import sip as __sip
+            from PySide6 import sip as __sip
         except:
-            import shiboken6 as __sip
+            try:
+                import sip as __sip
+            except:
+                try:
+                    import shiboken6 as __sip
+                except:
+                    try:
+                        import PySide6.shiboken6.Shiboken as __sip
+                    except:
+                        import PySide6.shiboken6 as __sip
 else:
     raise ImportError("ManyQt.sip")
 
