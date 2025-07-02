@@ -688,51 +688,17 @@ pyqtSignal = Signal
 pyqtSlot = Slot
 pyqtProperty = Property
 
-if USED_API == QT_API_PYSIDE2:
+if USED_API == [QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6]:
+    if dirname(dirname(__file__)) not in path:
+        path.append(dirname(dirname(__file__)))
+
     try:
-        from PySide2 import shiboken2 as __shiboken2
-    except ImportError:
-        import shiboken2 as __shiboken2
-
-
-    def cast(obj, type_):
-        """
-        :param obj: QObject
-        :param type_: QObject
-        :return: QObject
-        """
-        return wrapinstance(unwrapinstance(obj), type_)
-
-
-    def unwrapinstance(obj):
-        """
-        :param obj: QObject
-        :return: QObject
-        """
-        addr, = __shiboken2.getCppPointer(obj)
-        return addr
-
-
-    wrapinstance = __shiboken2.wrapInstance
-
-
-    def isdeleted(obj):
-        """
-        :param obj: QObject
-        :return: bool
-        """
-        return not __shiboken2.isValid(obj)
-
-
-    ispyowned = __shiboken2.ownedByPython
-    delete = __shiboken2.delete
-    ispycreated = __shiboken2.createdByPython
-elif USED_API in (QT_API_PYQT5, QT_API_PYQT6, QT_API_PYSIDE6):
-    from os.path import dirname
-    from sys import path
-    from os import name
-
-    path.append(dirname(dirname(__file__)))
+        from .ManyQt.shiboken import cast, isdeleted, ispyowned, ispycreated, delete, unwrapinstance, wrapinstance
+    except:
+        from ManyQt.shiboken import cast, isdeleted, ispyowned, ispycreated, delete, unwrapinstance, wrapinstance
+elif USED_API in (QT_API_PYQT5, QT_API_PYQT6):
+    if dirname(dirname(__file__)) not in path:
+        path.append(dirname(dirname(__file__)))
 
     try:
         from .ManyQt.sip import cast, isdeleted, ispyowned, ispycreated, delete, unwrapinstance, wrapinstance
