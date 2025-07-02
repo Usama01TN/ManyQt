@@ -67,8 +67,65 @@ elif USED_API == QT_API_PYSIDE6:
 else:
     raise ImportError("ManyQt.shiboken")
 
-if hasattr(__shiboken, 'wrapInstance') and not hasattr(__shiboken, 'cast'):
-    __shiboken.cast = __shiboken.wrapInstance
-if hasattr(__shiboken, 'cast') and not hasattr(__shiboken, 'wrapInstance'):
-    __shiboken.wrapInstance = __shiboken.cast
+# if hasattr(__shiboken, 'wrapInstance') and not hasattr(__shiboken, 'cast'):
+#     __shiboken.cast = __shiboken.wrapInstance
+# if hasattr(__shiboken, 'cast') and not hasattr(__shiboken, 'wrapInstance'):
+#     __shiboken.wrapInstance = __shiboken.cast
+
+if not hasattr(__shiboken, "cast"):
+    def cast(obj, type_):
+        """
+        :param obj: QObject
+        :param type_: QObject
+        :return: QObject
+        """
+        return __shiboken.wrapinstance(unwrapinstance(obj), type_)
+
+
+    __shiboken.cast = cast
+
+def unwrapinstance(obj):
+    """
+    :param obj: QObject
+    :return: QObject
+    """
+    if hasattr(__shiboken, 'getCppPointer'):
+        addr, = __shiboken.getCppPointer(obj)
+        return addr
+    elif hasattr(__shiboken, 'unwrapInstance'):
+        return __shiboken.unwrapInstance(obj)
+    return __shiboken.unwrapinstance(obj)
+
+if not hasattr(__shiboken, "unwrapinstance"):
+    __shiboken.unwrapinstance = unwrapinstance
+if not hasattr(__shiboken, "unwrapInstance"):
+    __shiboken.unwrapInstance = unwrapinstance
+if not hasattr(__shiboken, "wrapinstance"):
+    __shiboken.wrapinstance = __shiboken.wrapInstance
+if not hasattr(__shiboken, "wrapInstance"):
+    __shiboken.wrapInstance = __shiboken.wrapinstance
+
+
+def isdeleted(obj):
+    """
+    :param obj: QObject
+    :return: bool
+    """
+    if hasattr(__shiboken, "isdeleted"):
+        return __shiboken.isdeleted(obj)
+    return not __shiboken.isValid(obj)
+
+
+if not hasattr(__shiboken, "ispyowned"):
+    __shiboken.ispyowned = __shiboken.ownedByPython
+if not hasattr(__shiboken, "isdeleted"):
+    __shiboken.isdeleted = isdeleted
+if not hasattr(__shiboken, "isdelete"):
+    __shiboken.isdelete = isdeleted
+if not hasattr(__shiboken, "deleted"):
+    __shiboken.deleted = isdeleted
+if not hasattr(__shiboken, "delete"):
+    __shiboken.delete = isdeleted
+if not hasattr(__shiboken, "ispycreated"):
+    __shiboken.ispycreated = __shiboken.createdByPython
 modules["ManyQt.shiboken"] = __shiboken
