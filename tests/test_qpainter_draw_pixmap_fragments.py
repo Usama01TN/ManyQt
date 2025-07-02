@@ -85,13 +85,11 @@ class TestDrawPixmapFragments(TestCase):
         pix = QPixmap(10, 10)  # type: QPixmap
         pix.fill(Qt.red)
         try:
-            p.drawPixmapFragments(QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.), 1, pix)
+            p.drawPixmapFragments(p.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.), 1, pix)
         except:
             try:
-                p.drawPixmapFragments(
-                    [QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.)], 1, pix)
+                p.drawPixmapFragments([p.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.)], 1, pix)
             except:
-                p.drawPixmapFragments(
-                    [QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.)], pix)
+                p.drawPixmapFragments([p.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.)], pix)
         p.end()
         self.assertEqual(QColor(img.pixel(10, 10)), QColor(Qt.red))
