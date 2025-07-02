@@ -373,21 +373,238 @@ def QString(text):
             return text
 
 
-# Missing in QVariant.
-QVariant.value = QVariant.value if hasattr(QVariant, 'value') else (
-    QVariant.toObject if hasattr(QVariant, 'toObject') else None)
-QVariant.toObject = QVariant.toObject if hasattr(QVariant, 'toObject') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value)
-QVariant.toInt = QVariant.toInt if hasattr(QVariant, 'toInt') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value)
-QVariant.toDouble = QVariant.toDouble if hasattr(QVariant, 'toDouble') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value)
-QVariant.toFloat = QVariant.toFloat if hasattr(QVariant, 'toFloat') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value)
-QVariant.toString = QVariant.toString if hasattr(QVariant, 'toString') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value)
-QVariant.toBool = bool(QVariant.toBool if hasattr(QVariant, 'toBool') else (QVariant.toObject if hasattr(
-    QVariant, 'toObject') else QVariant.value))
+if 'QVariant' not in globals():
+    from json import loads, dumps
+
+
+    class QVariant(object):
+        """
+        Minimal QVariant compatibility wrapper for PySide2/PySide6.
+        """
+
+        class Type(object):
+            """
+            Type class.
+            """
+            Int = int
+            Double = float
+            String = str
+            Bool = bool
+            List = list
+            Dict = dict
+            None_ = None
+
+        Int = Type.Int  # type int
+        Double = Type.Double  # type float
+        String = Type.String  # type str
+        Bool = Type.Bool  # type bool
+        List = Type.List  # type list
+        Dict = Type.Dict  # type dict
+        None_ = Type.None_  # type None
+
+        def __init__(self, value=None):
+            """
+            :param value: any | None
+            :return:
+            """
+            self.__m_value = value  # type: any
+
+        def toString(self):
+            """
+            Returns the value converted to a string.
+            :return: str | unicode | QString
+            """
+            try:
+                return unicode(self.__m_value)
+            except:
+                return str(self.__m_value)
+
+        def __str__(self):
+            """
+            Returns the value converted to a string.
+            :return: str | unicode | QString
+            """
+            return self.toString()
+
+        def __int__(self):
+            """
+            Returns the value converted to an int.
+            :return: int
+            """
+            return self.toInt()
+
+        def __bool__(self):
+            """
+            :return: bool
+            """
+            return self.toBool()
+
+        def __float__(self):
+            """
+            Returns the value converted to a float.
+            :return: float
+            """
+            return self.toFloat()
+
+        def toInt(self):
+            """
+            Returns the value converted to an int.
+            :return: int
+            """
+            try:
+                return int(self.__m_value)
+            except ValueError:
+                return 0
+
+        def toFloat(self):
+            """
+            Returns the value converted to a float.
+            :return: float
+            """
+            try:
+                return float(self.__m_value)
+            except ValueError:
+                return 0.0
+
+        def toBool(self):
+            """
+            Returns the value converted to a boolean.
+            :return: bool
+            """
+            return bool(self.__m_value)
+
+        def toList(self):
+            """
+            Returns the value converted to a Python list.
+            :return: list
+            """
+            return self.__m_value if isinstance(self.__m_value, list) else [self.__m_value]
+
+        def value(self):
+            """
+            Returns the value stored in this QVariant.
+            :return: any
+            """
+            return self.__m_value
+
+        def toObject(self):
+            """
+            Returns the value stored in this QVariant.
+            :return: any
+            """
+            return self.__m_value
+
+        def isNull(self):
+            """
+            :return: bool
+            """
+            return self.__m_value is None
+
+        def isValid(self):
+            """
+            :return: bool
+            """
+            return self.__m_value is not None
+
+        def clear(self):
+            """
+            :return:
+            """
+            self.__m_value = None  # type: any
+
+        def swap(self, other):
+            """
+            Swaps the contents of this QVariant with those of other.
+            :param other: QVariant
+            :return:
+            """
+            if isinstance(other, QVariant):
+                self.__m_value, other.__m_value = other.__m_value, self.__m_value
+            else:
+                raise TypeError("swap expects a QVariant instance")
+
+        def canConvert(self, typeName):
+            """
+            Returns True if the current value can be converted to the given type name.
+            :type typeName: QVariant.Type
+            :return: bool
+            """
+            if typeName is None:
+                return False
+            try:
+                typeName(self.__m_value)
+                return True
+            except (ValueError, TypeError):
+                return False
+
+        def convert(self, typeName):
+            """
+            Converts the current value to the given type, if possible.
+            Returns True on success.
+            :param typeName: QVariant.Type
+            :return: bool
+            """
+            if typeName is None:
+                return False
+            try:
+                self.__m_value = typeName(self.__m_value)
+                return True
+            except (ValueError, TypeError):
+                return False
+
+        @staticmethod
+        def nameToType(name):
+            """
+            Maps a type name to a Python type.
+            :type name: QVariant.Type
+            :return: QVariant.Type
+            """
+            return name
+
+        def save(self):
+            """
+            Serializes the QVariant value to a JSON string.
+            :return: str | unicode | QString | None
+            """
+            try:
+                return dumps(self.__m_value)
+            except (TypeError, ValueError):
+                return None
+
+        def load(self, data):
+            """
+            Loads the QVariant value from a JSON string.
+            :param data: str | unicode | QString
+            :return: bool
+            """
+            try:
+                self.__m_value = loads(data)
+                return True
+            except (ValueError, TypeError):
+                return False
+
+        def __repr__(self):
+            """
+            Returns a string representation of the object.
+            :return: str | unicode | QString
+            """
+            return "<QVariant({})>".format(repr(self.__m_value))
+else:
+    # Missing in QVariant.
+    QVariant.value = QVariant.value if hasattr(QVariant, 'value') else (
+        QVariant.toObject if hasattr(QVariant, 'toObject') else None)
+    QVariant.toObject = QVariant.toObject if hasattr(QVariant, 'toObject') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value)
+    QVariant.toInt = QVariant.toInt if hasattr(QVariant, 'toInt') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value)
+    QVariant.toDouble = QVariant.toDouble if hasattr(QVariant, 'toDouble') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value)
+    QVariant.toFloat = QVariant.toFloat if hasattr(QVariant, 'toFloat') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value)
+    QVariant.toString = QVariant.toString if hasattr(QVariant, 'toString') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value)
+    QVariant.toBool = bool(QVariant.toBool if hasattr(QVariant, 'toBool') else (QVariant.toObject if hasattr(
+        QVariant, 'toObject') else QVariant.value))
 # Missing in PyQt4 <= 4.11.3
 if not hasattr(QEvent, "MacSizeChange"):
     QEvent.MacSizeChange = QEvent.Type(177)
@@ -438,19 +655,19 @@ if USED_API == QT_API_PYSIDE2:
         """
 
         # QSettings.value does not have `type` type in PySide2
-        def value(self, key, defaultValue=None, type=None):
+        def value(self, key, defaultValue=None, type_=None):
             """
             Returns the value for setting key. If the setting doesn't exist, returns defaultValue.
             :param key: QByteArray | bytes | bytearray | memoryview | str | None
             :param defaultValue: any | None
-            :param type: type | None
+            :param type_: type | None
             :return: any | None
             """
             if not self.contains(key):
                 return defaultValue
             value = super(QSettings, self).value(key)
-            if type is not None:
-                value = self.__qvariant_cast(value, type)
+            if type_ is not None:
+                value = self.__qvariant_cast(value, type_)
                 if value is None:
                     value = defaultValue
             return value
