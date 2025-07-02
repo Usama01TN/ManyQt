@@ -156,6 +156,7 @@ if USED_API in [QT_API_PYQT6, QT_API_PYSIDE6]:
     if USED_API == QT_API_PYQT6:
         from PyQt6.QtGui import *
     elif USED_API == QT_API_PYSIDE6:
+        from PySide6.QtWidgets import QFileSystemModel
         from PySide6.QtGui import *
     # Deprecated QEnterEvent accessors.
     if not hasattr(QEnterEvent, "pos"):
@@ -220,10 +221,9 @@ if USED_API in [QT_API_PYQT6, QT_API_PYSIDE6]:
     if not hasattr(QWheelEvent, "keyboardModifiers"):
         QWheelEvent.keyboardModifiers = lambda self: self.modifiers()
 elif USED_API == QT_API_PYQT5:
-    from PyQt5.QtGui import *
-    from PyQt5.QtWidgets import QShortcut, QAction, QActionGroup, QFileSystemModel
-    from PyQt5.QtWidgets import QUndoCommand, QUndoStack, QUndoGroup
+    from PyQt5.QtWidgets import QShortcut, QAction, QActionGroup, QFileSystemModel, QUndoCommand, QUndoStack, QUndoGroup
     from PyQt5.QtCore import PYQT_VERSION as _PYQT_VERSION
+    from PyQt5.QtGui import *
 
     if _PYQT_VERSION < 0x50c00:  # 5.12.0
         class WheelEvent(QWheelEvent):
@@ -277,8 +277,8 @@ elif USED_API == QT_API_PYSIDE:
     # Known to be present in PyQt4 but not in PySide: QGlyphRun, QRawFont, QStaticText, QTextDocumentWriter
 elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtGui import *
-    from PySide2.QtWidgets import QUndoCommand, QUndoStack, QUndoGroup
-    from PySide2.QtWidgets import QShortcut, QAction, QActionGroup, QFileSystemModel
+    from PySide2.QtWidgets import QUndoCommand, QUndoStack, QUndoGroup, QShortcut, QAction, QActionGroup, \
+        QFileSystemModel
 
 if USED_API in [QT_API_PYQT4, QT_API_PYSIDE]:
     try:
