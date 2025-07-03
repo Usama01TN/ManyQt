@@ -47,6 +47,7 @@ class TestDrawPixmapFragments(TestCase):
         cls.app = None  # type: QApplication | None
         super(TestDrawPixmapFragments, cls).tearDownClass()
 
+    @skipIf(not USED_API.lower().startswith("pyside"), "PySide only")
     def test(self):
         """
         :return:
@@ -59,21 +60,17 @@ class TestDrawPixmapFragments(TestCase):
         frags = [
             QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.),
             QPainter.PixmapFragment.create(QPointF(75, 75), QRectF(0, 0, 10, 10), 5., 5.)
-        ]
-        if USED_API.lower().startswith("pyside"):
-            # PySide6 requires exactly two arguments: fragments list and pixmap.
+        ]  # type list[PixmapFragmen]
+        # PyQt and other bindings might use different signatures.
+        try:
             p.drawPixmapFragments(frags, pix)
-        else:
-            # PyQt and other bindings might use different signatures.
+        except:
             try:
-                p.drawPixmapFragments(frags, pix)
+                p.drawPixmapFragments(frags, len(frags), pix)
             except:
-                try:
-                    p.drawPixmapFragments(frags, len(frags), pix)
-                except:
-                    # Fallback to drawing one by one.
-                    for frag in frags:
-                        p.drawPixmapFragments([frag], pix)
+                # Fallback to drawing one by one.
+                for frag in frags:
+                    p.drawPixmapFragments([frag], pix)
         p.end()
         self.assertEqual(QColor(img.pixel(10, 10)), QColor(Qt.red))
         self.assertEqual(QColor(img.pixel(80, 80)),  QColor(Qt.red))
