@@ -111,7 +111,7 @@ jobs:
 
           - os: macos-14
             python-version: "3.11"
-            test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
+            test-env: "PyQt6~=6.8.2 PyQt6-Qt6~=6.8.2"
 
           - os: macos-14
             python-version: "3.12"
