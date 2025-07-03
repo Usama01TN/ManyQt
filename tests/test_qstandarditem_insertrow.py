@@ -36,6 +36,6 @@ class TestQStandardItem(TestCase):
         self.assertEqual(model.index(0, 0, model.index(0, 0)).data(), "child")
         del itemChild
         del itemParent
-        #collect()
+        collect()
         #self.assertEqual(model.index(0, 0).data(), "parent")
         #self.assertEqual(model.index(0, 0, model.index(0, 0)).data(), "child")
