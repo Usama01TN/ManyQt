@@ -60,7 +60,7 @@ class TestDrawPixmapFragments(TestCase):
         frags = [
             QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.),
             QPainter.PixmapFragment.create(QPointF(75, 75), QRectF(0, 0, 10, 10), 5., 5.)
-        ]  # type list[PixmapFragmen]
+        ]  # type list[QPainter.PixmapFragmen]
         # PyQt and other bindings might use different signatures.
         try:
             p.drawPixmapFragments(frags, pix)
