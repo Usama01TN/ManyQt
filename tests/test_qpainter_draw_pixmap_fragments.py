@@ -47,7 +47,7 @@ class TestDrawPixmapFragments(TestCase):
         cls.app = None  # type: QApplication | None
         super(TestDrawPixmapFragments, cls).tearDownClass()
 
-    @skipIf(not USED_API.lower().startswith("pyside"), "PySide only")
+    @skipIf(USED_API.lower().startswith("pyside"), "PyQt only")
     def test(self):
         """
         :return:
