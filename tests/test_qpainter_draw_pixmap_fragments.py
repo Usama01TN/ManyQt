@@ -67,7 +67,7 @@ class TestDrawPixmapFragments(TestCase):
                 p.drawPixmapFragments(frags, pix)
             except:
                 for x in frags:
-                    p.drawPixmapFragments(x, pix)
+                    p.drawPixmapFragments([x], pix)
         p.end()
         self.assertEqual(QColor(img.pixel(10, 10)), QColor(Qt.red))
         self.assertEqual(QColor(img.pixel(80, 80)),  QColor(Qt.red))
