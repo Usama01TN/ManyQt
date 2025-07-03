@@ -34,8 +34,11 @@ class TestQStandardItem(TestCase):
         itemParent.insertRow(0, itemChild)
         self.assertEqual(model.index(0, 0).data(), "parent")
         self.assertEqual(model.index(0, 0, model.index(0, 0)).data(), "child")
-        # del itemChild
-        # del itemParent
-        collect()
+        del itemChild
+        del itemParent
+        try:
+            collect()
+        except:
+            pass
         self.assertEqual(model.index(0, 0).data(), "parent")
         self.assertEqual(model.index(0, 0, model.index(0, 0)).data(), "child")
