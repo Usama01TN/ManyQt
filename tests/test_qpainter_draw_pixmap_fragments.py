@@ -60,23 +60,20 @@ class TestDrawPixmapFragments(TestCase):
             QPainter.PixmapFragment.create(QPointF(25, 25), QRectF(0, 0, 10, 10), 5., 5.),
             QPainter.PixmapFragment.create(QPointF(75, 75), QRectF(0, 0, 10, 10), 5., 5.)
         ]
-        try:
-            p.drawPixmapFragments(frags, len(frags), pix)
-        except:
+        if USED_API.lower().startswith("pyside"):
+            # PySide6 requires exactly two arguments: fragments list and pixmap.
+            p.drawPixmapFragments(frags, pix)
+        else:
+            # PyQt and other bindings might use different signatures.
             try:
                 p.drawPixmapFragments(frags, pix)
             except:
-                for x in frags:
-                    try:
-                        p.drawPixmapFragments([x], pix)
-                    except:
-                        try:
-                            p.drawPixmapFragments([x], 1, pix)
-                        except:
-                            try:
-                                p.drawPixmapFragments(x, 1, pix)
-                            except:
-                                p.drawPixmapFragments(x, pix)
+                try:
+                    p.drawPixmapFragments(frags, len(frags), pix)
+                except:
+                    # Fallback to drawing one by one.
+                    for frag in frags:
+                        p.drawPixmapFragments([frag], pix)
         p.end()
         self.assertEqual(QColor(img.pixel(10, 10)), QColor(Qt.red))
         self.assertEqual(QColor(img.pixel(80, 80)),  QColor(Qt.red))
