@@ -939,6 +939,16 @@ def qFuzzyIsNull(f):
     return abs(f) <= 0.00001
 
 
+def clamp(v, minimum, maximum):
+    """
+    :param v: int | float
+    :param minimum: int | float
+    :param maximum: int | float
+    :return: int | float
+    """
+    return max(minimum, min(maximum, v))
+
+
 # OS Enums:
 Q_OS_OPENBSD = 0  # type: int
 Q_OS_NETBSD = 1  # type: int
