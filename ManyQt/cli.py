@@ -16,8 +16,10 @@ def printVersion():
     from os.path import dirname
     from sys import path
 
-    path.append(dirname(__file__))
-    path.append(dirname(dirname(__file__)))
+    if dirname(__file__) not in path:
+        path.append(dirname(__file__))
+    if dirname(dirname(__file__)) not in path:
+        path.append(dirname(dirname(__file__)))
 
     try:
         from .ManyQt import __version__
