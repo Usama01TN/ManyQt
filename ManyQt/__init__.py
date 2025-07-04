@@ -4,7 +4,7 @@ Initialize ManyQt module.
 """
 from sys import version_info
 
-__version__ = '0.3.2'  # type: str
+__version__ = '0.3.3'  # type: str
 __PREFERRED_API = None  # type: str | None
 __SELECTED_API = None  # type: str | None
 #: A string indicating which Qt api is used (will be `None` *until* a api is selected and commited to.
