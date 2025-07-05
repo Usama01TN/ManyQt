@@ -274,6 +274,36 @@ elif USED_API == QT_API_PYSIDE:
 
     globals().update({name: getattr(_QtGui, name) for name in __Qt4_QtGui if hasattr(_QtGui, name)})
     del _QtGui
+
+    # QDesktopServices has has been split into (QDesktopServices and QStandardPaths) in Qt5
+    # It only exposes QDesktopServices that are still in pyqt5
+    from PySide.QtGui import QDesktopServices as __QDesktopServices
+
+
+    class QDesktopServices(object):
+        """
+        QDesktopServices class.
+        """
+        openUrl = __QDesktopServices.openUrl
+        setUrlHandler = __QDesktopServices.setUrlHandler
+        unsetUrlHandler = __QDesktopServices.unsetUrlHandler
+
+        def __getattr__(self, name):
+            """
+            :param name: str | unicode | QString
+            :return: any
+            """
+            attr = getattr(__QDesktopServices, name)
+
+            newName = name  # type: str
+            if name == 'storageLocation':
+                newName = 'writableLocation'  # type: str
+            warn(("Warning QDesktopServices.{} is deprecated in Qt5"
+                  "we recommend you use QDesktopServices.{} instead").format(name, newName), DeprecationWarning)
+            return attr
+
+
+    QDesktopServices = QDesktopServices()  # type: QDesktopServices
     # Known to be present in PyQt4 but not in PySide: QGlyphRun, QRawFont, QStaticText, QTextDocumentWriter
 elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtGui import *
@@ -294,7 +324,8 @@ if USED_API in [QT_API_PYQT4, QT_API_PYSIDE]:
         :param self: QWheelEvent
         :return: QPoint
         """
-        return __QtCore.QPoint(self.delta(), 0) if self.orientation() == __QtCore.Qt.Horizontal else __QtCore.QPoint(0, self.delta())
+        return __QtCore.QPoint(self.delta(), 0) if self.orientation() == __QtCore.Qt.Horizontal else __QtCore.QPoint(0,
+                                                                                                                     self.delta())
 
 
     def __QWheelEvent_pixelDelta(self):
@@ -404,6 +435,114 @@ if USED_API in (QT_API_PYQT5, QT_API_PYSIDE2):
     QPdfWriter.setPageSize = QPdfWriter_setPageSize
     del QPdfWriter_setPageSize
 
+# Make `QAction.setShortcut` and `QAction.setShortcuts` compatible with Qt>=6.4
+if not hasattr(QAction, 'setShortcut') or not hasattr(QAction, 'setShortcuts'):
+
+    try:
+        from functools import partialmethod
+    except:
+        from functools import partial
+
+
+        # Descriptor version.
+        class partialmethod(object):
+            """
+            Method descriptor with partial application of the given arguments and keywords.
+            Supports wrapping existing descriptors and handles non-descriptor callables as instance methods.
+            """
+
+            def __init__(self, func, *args, **keywords):
+                if not callable(func) and not hasattr(func, "__get__"):
+                    raise TypeError("{!r} is not callable or a descriptor".format(func))
+                # func could be a descriptor like classmethod which isn't callable,
+                # so we can't inherit from partial (it verifies func is callable).
+                if isinstance(func, partialmethod):
+                    # flattening is mandatory in order to place cls/self before all other arguments.
+                    # it's also more efficient since only one function will be called.
+                    self.func = func.func
+                    self.args = func.args + args
+                    self.keywords = func.keywords.copy()
+                    self.keywords.update(keywords)
+                else:
+                    self.func = func
+                    self.args = args
+                    self.keywords = keywords
+
+            def __repr__(self):
+                args = ", ".join(map(repr, self.args))  # type: str
+                keywords = ", ".join("{}={!r}".format(k, v) for k, v in (self.keywords.iteritems() if hasattr(
+                    self.keywords, 'iteritems') else self.keywords.items()))
+                formatString = "{module}.{cls}({func}, {args}, {keywords})"
+                return formatString.format(module=self.__class__.__module__, cls=self.__class__.__name__,
+                                           func=self.func, args=args, keywords=keywords)
+
+            def _makeUnboundMethod(self):
+                def _method(*args, **keywords):
+                    callKeywords = self.keywords.copy()
+                    callKeywords.update(keywords)
+                    clsOrSelf, rest = args[0], args[1:]
+                    callArgs = (clsOrSelf,) + self.args + tuple(rest)
+                    return self.func(*callArgs, **callKeywords)
+
+                _method.__isabstractmethod__ = self.__isabstractmethod__
+                _method._partialmethod = self
+                return _method
+
+            def __get__(self, obj, cls):
+                get = getattr(self.func, "__get__", None)
+                result = None
+                if get is not None:
+                    newFunc = get(obj, cls)
+                    if newFunc is not self.func:
+                        result = partial(newFunc, *self.args, **self.keywords)
+                        try:
+                            result.__self__ = newFunc.__self__
+                        except AttributeError:
+                            pass
+                    if result is None:
+                        result = self._makeUnboundMethod().__get__(obj, cls)
+                return result
+
+            @property
+            def __isabstractmethod__(self):
+                return getattr(self.func, "__isabstractmethod__", False)
+
+    if not hasattr(QAction, 'setShortcut'):
+        def setShortcut(self, shortcut, oldSetShortcut):
+            """
+            Ensure that the type of `shortcut` is compatible to `QAction.setShortcut`.
+            """
+            try:
+                from .QtCore import Qt
+            except:
+                from QtCore import Qt
+
+            if isinstance(shortcut, (QKeySequence.StandardKey, Qt.Key, int)):
+                shortcut = QKeySequence(shortcut)  # type: QKeySequence
+            oldSetShortcut(self, shortcut)
+
+
+        QAction.setShortcut = partialmethod(setShortcut, oldSetShortcut=QAction.setShortcut)
+    if not hasattr(QAction, 'setShortcuts'):
+        def setShortcuts(self, shortcuts, oldSetShortcuts):
+            """
+            Ensure that the type of `shortcuts` is compatible to `QAction.setShortcuts`.
+            """
+            try:
+                from .QtCore import Qt
+            except:
+                from QtCore import Qt
+
+            if isinstance(shortcuts, (QKeySequence, QKeySequence.StandardKey, Qt.Key, int, str)):
+                shortcuts = (shortcuts,)
+            shortcuts = tuple(
+                (QKeySequence(shortcut) if isinstance(shortcut, (QKeySequence.StandardKey, Qt.Key, int)) else shortcut)
+                for shortcut in shortcuts)
+            oldSetShortcuts(self, shortcuts)
+
+
+        QAction.setShortcuts = partialmethod(setShortcuts, oldSetShortcuts=QAction.setShortcuts)
+
 if not hasattr(QGuiApplication, 'screenAt'):
     def QGuiApplication_screenAt(pos):
         """
@@ -424,7 +563,6 @@ if not hasattr(QGuiApplication, 'screenAt'):
 
     QGuiApplication.screenAt = staticmethod(QGuiApplication_screenAt)
     del QGuiApplication_screenAt
-
 
 if not hasattr(QImage, 'pixelColor'):
     def QImage_pixelColor(self, x, y):
