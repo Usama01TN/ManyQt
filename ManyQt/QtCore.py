@@ -259,6 +259,8 @@ __PyQt4_QtCore_missing_in_Qt5 = ['pyqtSignature']  # type: list[str]
 if USED_API == QT_API_PYQT6:
     from PyQt6.QtCore import *
 
+    Q_ENUMS = pyqtEnum
+    Q_ENUM = pyqtEnum
     Signal = pyqtSignal
     Slot = pyqtSlot
     Property = pyqtProperty
@@ -294,6 +296,7 @@ elif USED_API == QT_API_PYQT5:
         import PyQt5.QtWidgets
     except ImportError:
         pass
+    Q_ENUM = Q_ENUMS
     Signal = pyqtSignal
     Slot = pyqtSlot
     Property = pyqtProperty
@@ -304,6 +307,7 @@ elif USED_API == QT_API_PYQT4:
 
     globals().update({name: getattr(_QtCore, name) for name in __Qt4_QtCore + __PyQt4_QtCore if hasattr(_QtCore, name)})
     globals().update({name: getattr(_QtGui, name) for name in __Qt4_QtGui if hasattr(_QtCore, name)})
+    Q_ENUM = _QtCore.Q_ENUMS
     Signal = _QtCore.pyqtSignal
     Slot = _QtCore.pyqtSlot
     Property = _QtCore.pyqtProperty
@@ -320,6 +324,8 @@ elif USED_API == QT_API_PYSIDE:
     from PySide import QtCore as _QtCore, QtGui as _QtGui
 
     globals().update({name: getattr(_QtCore, name) for name in __Qt4_QtCore if hasattr(_QtCore, name)})
+    Q_ENUMS = _QtCore.QEnum
+    Q_ENUM = _QtCore.QEnum
     Signal = _QtCore.Signal
     Slot = _QtCore.Slot
     Property = _QtCore.Property
@@ -343,6 +349,8 @@ elif USED_API == QT_API_PYSIDE2:
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
+    Q_ENUMS = QEnum
+    Q_ENUM = QEnum
     BoundSignal = Signal
     pyqtSignal = Signal
     pyqtSlot = Slot
@@ -353,6 +361,8 @@ elif USED_API == QT_API_PYSIDE6:
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
+    Q_ENUMS = QEnum
+    Q_ENUM = QEnum
     BoundSignal = Signal
     pyqtSignal = Signal
     pyqtSlot = Slot
@@ -1294,3 +1304,31 @@ if 'QDeadlineTimer' not in globals():
     #         :return: bool
     #         """
     #         return QDateTime.currentDateTime() < self.__endTime
+
+
+if 'QDate' in globals():
+    if not hasattr(QDate, 'toPython'):
+        QDate.toPython = lambda self, *args, **kwargs: self.toPyDate(*args, **kwargs)
+    if not hasattr(QDate, 'toPyDate'):
+        QDate.toPyDate = lambda self, *args, **kwargs: self.toPython(*args, **kwargs)
+if 'QDateTime' in globals():
+    if not hasattr(QDateTime, 'toPython'):
+        QDateTime.toPython = lambda self, *args, **kwargs: self.toPyDateTime(*args, **kwargs)
+    if not hasattr(QDateTime, 'toPyDateTime'):
+        QDateTime.toPyDateTime = lambda self, *args, **kwargs: self.toPython(*args, **kwargs)
+if 'QTime' in globals():
+    if not hasattr(QTime, 'toPython'):
+        QTime.toPython = lambda self, *args, **kwargs: self.toPyTime(*args, **kwargs)
+    if not hasattr(QTime, 'toPyTime'):
+        QTime.toPyTime = lambda self, *args, **kwargs: self.toPython(*args, **kwargs)
+
+# Mirror https://github.com/spyder-ide/qtpy/pull/393
+if 'QLibraryInfo' in globals():
+    if not hasattr(QLibraryInfo, 'path'):
+        QLibraryInfo.path = QLibraryInfo.location
+    if not hasattr(QLibraryInfo, 'LibraryPath'):
+        QLibraryInfo.LibraryPath = QLibraryInfo.LibraryLocation
+    if not hasattr(QLibraryInfo, 'location'):
+        QLibraryInfo.location = QLibraryInfo.path
+    if not hasattr(QLibraryInfo, 'LibraryLocation'):
+        QLibraryInfo.LibraryLocation = QLibraryInfo.LibraryPath
