@@ -259,12 +259,20 @@ __PyQt4_QtCore_missing_in_Qt5 = ['pyqtSignature']  # type: list[str]
 if USED_API == QT_API_PYQT6:
     from PyQt6.QtCore import *
 
+    QEnum = pyqtEnum
+    QEnums = pyqtEnum
     Q_ENUMS = pyqtEnum
     Q_ENUM = pyqtEnum
+    pyqtEnums = pyqtEnum
+    Q_FLAGS = object
+    Q_FLAG = object
+    QFlags = object
+    QFlag = object
     Signal = pyqtSignal
     Slot = pyqtSlot
     Property = pyqtProperty
     BoundSignal = pyqtBoundSignal
+    SignalInstance = pyqtBoundSignal
     Qt.Alignment = Qt.AlignmentFlag
     Qt.ApplicationStates = Qt.ApplicationState
     Qt.DockWidgetAreas = Qt.DockWidgetArea
@@ -296,21 +304,39 @@ elif USED_API == QT_API_PYQT5:
         import PyQt5.QtWidgets
     except ImportError:
         pass
+    QEnum = Q_ENUMS
+    QEnums = Q_ENUMS
     Q_ENUM = Q_ENUMS
+    pyqtEnum = Q_ENUMS
+    pyqtEnums = Q_ENUMS
+    QFlag = Q_FLAGS
+    Q_FLAG = Q_FLAGS
+    QFlags = Q_FLAGS
     Signal = pyqtSignal
     Slot = pyqtSlot
     Property = pyqtProperty
     BoundSignal = pyqtBoundSignal
+    SignalInstance = pyqtBoundSignal
 
 elif USED_API == QT_API_PYQT4:
     from PyQt4 import QtCore as _QtCore, QtGui as _QtGui
 
     globals().update({name: getattr(_QtCore, name) for name in __Qt4_QtCore + __PyQt4_QtCore if hasattr(_QtCore, name)})
     globals().update({name: getattr(_QtGui, name) for name in __Qt4_QtGui if hasattr(_QtCore, name)})
+
+    QEnum = _QtCore.Q_ENUMS
+    QEnums = _QtCore.Q_ENUMS
     Q_ENUM = _QtCore.Q_ENUMS
+    pyqtEnum = _QtCore.Q_ENUMS
+    pyqtEnums = _QtCore.Q_ENUMS
     Signal = _QtCore.pyqtSignal
     Slot = _QtCore.pyqtSlot
+    QFlag = _QtCore.Q_FLAGS
+    Q_FLAG = _QtCore.Q_FLAGS
+    QFlags = _QtCore.Q_FLAGS
     Property = _QtCore.pyqtProperty
+    BoundSignal = _QtCore.pyqtBoundSignal
+    SignalInstance = _QtCore.pyqtBoundSignal
     QAbstractProxyModel = _QtGui.QAbstractProxyModel
     QIdentityProxyModel = _QtGui.QIdentityProxyModel
     QItemSelection = _QtGui.QItemSelection
@@ -324,11 +350,19 @@ elif USED_API == QT_API_PYSIDE:
     from PySide import QtCore as _QtCore, QtGui as _QtGui
 
     globals().update({name: getattr(_QtCore, name) for name in __Qt4_QtCore if hasattr(_QtCore, name)})
+    QEnums = _QtCore.QEnum
     Q_ENUMS = _QtCore.QEnum
     Q_ENUM = _QtCore.QEnum
+    pyqtEnum = _QtCore.QEnum
+    pyqtEnums = _QtCore.QEnum
     Signal = _QtCore.Signal
     Slot = _QtCore.Slot
     Property = _QtCore.Property
+    Q_FLAGS = _QtCore.QFlag
+    Q_FLAG = _QtCore.QFlag
+    QFlags = _QtCore.QFlag
+    BoundSignal = _QtCore.Signal
+    pyqtBoundSignal = _QtCore.Signal
 
     QAbstractProxyModel = _QtGui.QAbstractProxyModel
     if hasattr(_QtGui, "QIdentityProxyModel"):
@@ -349,24 +383,54 @@ elif USED_API == QT_API_PYSIDE2:
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
+    QEnums = QEnum
     Q_ENUMS = QEnum
     Q_ENUM = QEnum
+    pyqtEnum = QEnum
+    pyqtEnums = QEnum
+    Q_FLAGS = QFlag
+    Q_FLAG = QFlag
+    QFlags = QFlag
     BoundSignal = Signal
     pyqtSignal = Signal
     pyqtSlot = Slot
     pyqtProperty = Property
+    pyqtBoundSignal = Signal
 elif USED_API == QT_API_PYSIDE6:
     from PySide6.QtCore import *
 
+    # from enum import Enum, IntEnum
+
+    # def _QEnum(*args, **kwargs):
+    #     """
+    #     :param args: any
+    #     :param kwargs: any
+    #     """
+    #     subArgs = (Enum(x.__name__, {k: v for k, v in x.__dict__.items() if not k.startswith('_') and isinstance(
+    #         v, (int, str))}) for x in args if not isinstance(x, (Enum, IntEnum)))
+    #     for key in kwargs:
+    #         if not isinstance(kwargs[key], (Enum, IntEnum)):
+    #             kwargs[key] = Enum(key.__name__, {k: v for k, v in key.__dict__.items() if not k.startswith(
+    #                 '_') and isinstance(v, (int, str))})
+    #     QEnum(*subArgs, **kwargs)
+
+    # QEnum = _QEnum
+    QEnums = QEnum
+    Q_ENUMS = QEnum
+    Q_ENUM = QEnum
+    pyqtEnum = QEnum
+    pyqtEnums = QEnum
+    Q_FLAGS = QFlag
+    Q_FLAG = QFlag
+    QFlags = QFlag
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
-    Q_ENUMS = QEnum
-    Q_ENUM = QEnum
-    BoundSignal = Signal
+    pyqtProperty = Property
     pyqtSignal = Signal
     pyqtSlot = Slot
-    pyqtProperty = Property
+    BoundSignal = Signal
+    pyqtBoundSignal = Signal
 
 
 def QString(text):
@@ -1322,7 +1386,6 @@ if 'QTime' in globals():
     if not hasattr(QTime, 'toPyTime'):
         QTime.toPyTime = lambda self, *args, **kwargs: self.toPython(*args, **kwargs)
 
-# Mirror https://github.com/spyder-ide/qtpy/pull/393
 if 'QLibraryInfo' in globals():
     if not hasattr(QLibraryInfo, 'path'):
         QLibraryInfo.path = QLibraryInfo.location
