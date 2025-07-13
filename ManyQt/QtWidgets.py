@@ -1015,5 +1015,7 @@ except:
 
 if not hasattr(QWidget, 'devicePixelRatioF'):
     QWidget.devicePixelRatioF = lambda self, x: float(self.devicePixelRatio(x))
+if not hasattr(QWidget, 'setWindowFlag'):
+    QWidget.setWindowFlag = QWidget.setWindowFlags
 del Signal, Slot
 apply_global_fixes(globals())
