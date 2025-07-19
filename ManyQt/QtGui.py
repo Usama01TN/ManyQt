@@ -577,8 +577,24 @@ if not hasattr(QImage, 'pixelColor'):
 
     QImage.pixelColor = QImage_pixelColor
 
+if not hasattr(QImage, 'setPixelColor'):
+    def QImage_setPixelColor(self, x, y, color):
+        """
+        :param self: QImage
+        :param x: int
+        :param y: int
+        :param color: QColor | Qt.GlobalColor | int | str | QString
+        :return:
+        """
+        if not isinstance(color, QColor):
+            color = QColor(color)  # type: QColor
+        self.setPixel(x, y, color.rgb())
+
+
+    QImage.setPixelColor = QImage_setPixelColor
+
 # Alias QFontMetrics(F).horizontalAdvance to QFontMetrics(F).width
-# when it does not exists
+# when it does not exists.
 if not hasattr(QFontMetrics, "horizontalAdvance"):
     def QFontMetrics_horizontalAdvance(self, *args, **kwargs):
         """
