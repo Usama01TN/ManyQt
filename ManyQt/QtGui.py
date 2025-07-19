@@ -572,7 +572,7 @@ if not hasattr(QImage, 'pixelColor'):
         :param y: int
         :return: QColor
         """
-        return QColor(self.pixel(x, y))
+        return QColor.fromRgba(self.pixel(x, y))
 
 
     QImage.pixelColor = QImage_pixelColor
@@ -588,7 +588,7 @@ if not hasattr(QImage, 'setPixelColor'):
         """
         if not isinstance(color, QColor):
             color = QColor(color)  # type: QColor
-        self.setPixel(x, y, color.rgb())
+        self.setPixel(x, y, color.rgba())
 
 
     QImage.setPixelColor = QImage_setPixelColor
