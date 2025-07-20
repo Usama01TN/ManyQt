@@ -109,24 +109,24 @@ if USED_API is None:
         del __available
     del __existing
 if USED_API is None:
-    raise ImportError("PyQt4, PyQt5, PySide or PySide2 are not available for import")
-if "MANYQT_HOOK_DENY" in environ:
+    raise ImportError('PyQt4, PyQt5, PyQt6, PySide, PySide2 or PySide6 are not available for import!')
+if 'MANYQT_HOOK_DENY' in environ:
     try:
         from .importhooks import install_deny_hook
     except:
         from importhooks import install_deny_hook
 
-    for __denyapi in environ["MANYQT_HOOK_DENY"].split(","):
+    for __denyapi in environ['MANYQT_HOOK_DENY'].split(','):
         if __denyapi.lower() != USED_API:
             install_deny_hook(__denyapi.lower())
     del install_deny_hook
-if "MANYQT_HOOK_BACKPORT" in environ:
+if 'MANYQT_HOOK_BACKPORT' in environ:
     try:
         from .importhooks import install_backport_hook
     except:
         from importhooks import install_backport_hook
 
-    for __backportapi in environ["MANYQT_HOOK_BACKPORT"].split(","):
+    for __backportapi in environ['MANYQT_HOOK_BACKPORT'].split(','):
         if __backportapi.lower() != USED_API:
             install_backport_hook(__backportapi.lower())
     del install_backport_hook
