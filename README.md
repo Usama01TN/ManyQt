@@ -1,6 +1,6 @@
 # 📚 ManyQt
 
-**ManyQt** is a lightweight abstraction layer that enables developers to write applications with a single API targeting PyQt and PySide. It supports multiple Qt versions and bindings—**PyQt4, PyQt5, PySide, PySide2, PyQt6, and PySide6**—under a **Qt5-style layout**, where `QtGui` and `QtWidgets` are separated.
+**ManyQt** is a lightweight abstraction layer that enables developers to write applications with a single API targeting PyQt and PySide. It supports multiple Qt versions and bindings **PyQt4, PyQt5, PySide, PySide2, PyQt6, and PySide6**—under a **Qt5-style layout**, where `QtGui` and `QtWidgets` are separated.
 
 *(Inspired from [QtPy](https://github.com/spyder-ide/qtpy) and [AnyQt](https://github.com/ales-erjavec/anyqt).)*
 
@@ -15,11 +15,11 @@ pip install ManyQt
 
 ### From GitHub (latest development version):
 ```bash
-pip install git+https://github.com/Usama01TN/manyqt.git
+pip install git+https://github.com/Usama01TN/ManyQt.git
 ```
 or for a specific branch:
 ```bash
-pip install git+https://github.com/Usama01TN/manyqt.git@branch-name
+pip install git+https://github.com/Usama01TN/ManyQt.git@branch-name
 ```
 
 Note: ManyQt itself has no dependencies, but you must have at least one Qt binding installed (PyQt or PySide variant). To install a Qt binding alongside ManyQt:
@@ -35,7 +35,7 @@ pip install ManyQt pyqt5  # or pyqt6, pyside2, pyside6, etc...
 ManyQt simplifies cross-version and cross-binding development:
 
 - Write your code using **standard Qt API patterns**.
-- Import from `manyqt` instead of `PyQtX` or `PySideX`.
+- Import from `ManyQt` instead of `PyQtX` or `PySideX`.
 - Seamlessly **port between** Qt4, Qt5, and Qt6.
 - Resolve incompatibilities automatically.
 - Incrementally migrate large codebases—**module by module**.
