@@ -1,6 +1,6 @@
 # 📚 ManyQt
 
-**ManyQt** is a lightweight abstraction layer that enables developers to write applications with a single API targeting PyQt and PySide. It supports multiple Qt versions and bindings **PyQt4, PyQt5, PySide, PySide2, PyQt6, and PySide6**—under a **Qt5-style layout**, where `QtGui` and `QtWidgets` are separated.
+**ManyQt** is a lightweight abstraction layer that enables developers to write applications with a single API targeting PyQt and PySide. It supports multiple Qt versions and bindings **PyQt4, PyQt5, PySide, PySide2, PyQt6, and PySide6** under a **Qt5-style layout**, where `QtGui` and `QtWidgets` are separated.
 
 *(Inspired from [QtPy](https://github.com/spyder-ide/qtpy) and [AnyQt](https://github.com/ales-erjavec/anyqt).)*
 
