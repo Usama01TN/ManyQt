@@ -294,6 +294,8 @@ if USED_API == QT_API_PYQT6:
     Qt.WindowFlags = Qt.WindowType
     Qt.WindowStates = Qt.WindowState
     QItemSelectionModel.SelectionFlags = QItemSelectionModel.SelectionFlag
+    PYSIDE_VERSION = PYQT_VERSION  # type: int
+    PYSIDE_VERSION_STR = __version__ = PYQT_VERSION_STR  # type: str
 elif USED_API == QT_API_PYQT5:
     from PyQt5.QtCore import *
 
@@ -317,7 +319,8 @@ elif USED_API == QT_API_PYQT5:
     Property = pyqtProperty
     BoundSignal = pyqtBoundSignal
     SignalInstance = pyqtBoundSignal
-
+    PYSIDE_VERSION = PYQT_VERSION  # type: int
+    PYSIDE_VERSION_STR = __version__ = PYQT_VERSION_STR  # type: str
 elif USED_API == QT_API_PYQT4:
     from PyQt4 import QtCore as _QtCore, QtGui as _QtGui
 
@@ -344,8 +347,9 @@ elif USED_API == QT_API_PYQT4:
     QItemSelectionRange = _QtGui.QItemSelectionRange
     QSortFilterProxyModel = _QtGui.QSortFilterProxyModel
     QStringListModel = _QtGui.QStringListModel
+    PYSIDE_VERSION = _QtCore.PYQT_VERSION  # type: int
+    PYSIDE_VERSION_STR = __version__ = _QtCore.PYQT_VERSION_STR  # type: str
     del _QtCore, _QtGui
-
 elif USED_API == QT_API_PYSIDE:
     from PySide import QtCore as _QtCore, QtGui as _QtGui
 
@@ -363,7 +367,6 @@ elif USED_API == QT_API_PYSIDE:
     QFlags = _QtCore.QFlag
     BoundSignal = _QtCore.Signal
     pyqtBoundSignal = _QtCore.Signal
-
     QAbstractProxyModel = _QtGui.QAbstractProxyModel
     if hasattr(_QtGui, "QIdentityProxyModel"):
         QIdentityProxyModel = _QtGui.QIdentityProxyModel
@@ -375,14 +378,21 @@ elif USED_API == QT_API_PYSIDE:
     _major, _minor, _micro = tuple(map(int, _QtCore.qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
-    del _QtCore, _QtGui, _major, _minor, _micro
+    _maj, _min, _patch = tuple(map(int, _QtCore.__version__.split(".")[:3]))  # type: int, int, int
+    PYSIDE_VERSION = PYQT_VERSION = (_maj << 16) | (_min << 8) | _patch  # type: int
+    PYSIDE_VERSION_STR = PYQT_VERSION_STR = _QtCore.__version__  # type: str
+    del _QtCore, _QtGui, _major, _minor, _micro, _maj, _min, _patch
     # Known to be in PyQt4 but missing in PySide: Q_ARG, Q_CLASSINFO, Q_ENUMS, Q_FLAGS, Q_RETURN_ARG, ...
 elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtCore import *
+    from PySide2.QtCore import __version__
 
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
+    _maj, _min, _patch = tuple(map(int, __version__.split(".")[:3]))  # type: int, int, int
+    PYSIDE_VERSION = PYQT_VERSION = (_maj << 16) | (_min << 8) | _patch  # type: int
+    PYSIDE_VERSION_STR = PYQT_VERSION_STR = __version__  # type: str
     QEnums = QEnum
     Q_ENUMS = QEnum
     Q_ENUM = QEnum
@@ -398,6 +408,7 @@ elif USED_API == QT_API_PYSIDE2:
     pyqtBoundSignal = Signal
 elif USED_API == QT_API_PYSIDE6:
     from PySide6.QtCore import *
+    from PySide6.QtCore import __version__
 
     # from enum import Enum, IntEnum
 
@@ -413,7 +424,6 @@ elif USED_API == QT_API_PYSIDE6:
     #             kwargs[key] = Enum(key.__name__, {k: v for k, v in key.__dict__.items() if not k.startswith(
     #                 '_') and isinstance(v, (int, str))})
     #     QEnum(*subArgs, **kwargs)
-
     # QEnum = _QEnum
     QEnums = QEnum
     Q_ENUMS = QEnum
@@ -426,6 +436,9 @@ elif USED_API == QT_API_PYSIDE6:
     _major, _minor, _micro = tuple(map(int, qVersion().split(".")[:3]))  # type: int, int, int
     QT_VERSION = (_major << 16) + (_minor << 8) + _micro  # type: int
     QT_VERSION_STR = "{}.{}.{}".format(_major, _minor, _micro)  # type: str
+    _maj, _min, _patch = tuple(map(int, __version__.split(".")[:3]))  # type: int, int, int
+    PYSIDE_VERSION = PYQT_VERSION = (_maj << 16) | (_min << 8) | _patch  # type: int
+    PYSIDE_VERSION_STR = PYQT_VERSION_STR = __version__  # type: str
     pyqtProperty = Property
     pyqtSignal = Signal
     pyqtSlot = Slot
