@@ -21,6 +21,7 @@ except:
 # Names imported from Qt4's QtGui module.
 __Qt4_QtGui = [
     'QAbstractTextDocumentLayout',
+    'QAction',
     'QActionEvent',
     'QBitmap',
     'QBrush',
@@ -685,3 +686,4 @@ if __QT_VERSION_INFO < (6, 0):
         del staticwrapper
 
 apply_global_fixes(globals())
+
