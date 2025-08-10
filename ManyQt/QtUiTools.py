@@ -9,9 +9,9 @@ if dirname(__file__) not in path:
     path.append(dirname(__file__))
 
 try:
-    from ._api import USED_API, QT_API_PYSIDE, QT_API_PYSIDE6, apply_global_fixes
+    from ._api import USED_API, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, apply_global_fixes
 except:
-    from _api import USED_API, QT_API_PYSIDE, QT_API_PYSIDE6, apply_global_fixes
+    from _api import USED_API, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, apply_global_fixes
 
 if USED_API == QT_API_PYSIDE:
     from PySide.QtUiTools import *
@@ -23,3 +23,4 @@ else:
     raise ImportError("No module named 'QtUiTools' in the selected Qt api ({})".format(USED_API))
 
 apply_global_fixes(globals())
+
