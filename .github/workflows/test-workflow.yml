@@ -1,4 +1,4 @@
-name : Run tests
+name: Run tests
 
 on: [push, pull_request]
 
@@ -13,7 +13,7 @@ jobs:
       PIP_PREFER_BINARY: 1
 
     strategy:
-      fail-fast: False
+      fail-fast: false
       matrix:
         include:
           # Linux
@@ -21,55 +21,45 @@ jobs:
             python-version: 3.7
             test-env: "PyQt5~=5.12.0"
             qt-api: "PyQt5"
-
           - os: ubuntu-22.04
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
             qt-api: "PyQt5"
-
           - os: ubuntu-22.04
             python-version: 3.9
             test-env: "PyQt5~=5.15.0"
             qt-api: "PyQt5"
-
           - os: ubuntu-22.04
             python-version: 3.9
             test-env: "PySide6==6.8.1"
             qt-api: "PySide6"
             extra-system-packages: "glibc-tools"
-
           - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PyQt5~=5.15.0"
             qt-api: "PyQt5"
-
           - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PyQt6~=6.2.3 PyQt6-Qt6~=6.2.3"
             qt-api: "PyQt6"
-
           - os: ubuntu-22.04
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
             qt-api: "PyQt6"
-
           - os: ubuntu-22.04
             python-version: "3.10"
             test-env: "PySide2~=5.15.0"
             qt-api: "PySide2"
-
           - os: ubuntu-24.04
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
             qt-api: "PyQt6"
             extra-system-packages: "glibc-tools"
-
           - os: ubuntu-24.04
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
             qt-api: "PyQt6"
             extra-system-packages: "glibc-tools"
-
           - os: ubuntu-24.04
             python-version: "3.13"
             test-env: "PySide6~=6.9.1"
@@ -80,39 +70,30 @@ jobs:
           - os: macos-13
             python-version: 3.7
             test-env: "PyQt5~=5.12.0"
-
           - os: macos-13
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
-
           - os: macos-14
             python-version: 3.9
             test-env: "PyQt5~=5.15.0"
-
           - os: macos-14
             python-version: 3.9
             test-env: "PySide6==6.8.1"
-
           - os: macos-14
             python-version: "3.10"
             test-env: "PyQt5~=5.15.0"
-
           - os: macos-14
             python-version: "3.10"
             test-env: "PyQt6~=6.2.3 PyQt6-Qt6~=6.2.3"
-
           - os: macos-14
             python-version: "3.11"
             test-env: "PyQt6~=6.9.0 PyQt6-Qt6~=6.9.0"
-
           - os: macos-13
             python-version: "3.10"
             test-env: "PySide2"
-
           - os: macos-14
             python-version: "3.11"
             test-env: "PyQt6~=6.8.0 PyQt6-Qt6~=6.8.2"
-
           - os: macos-14
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
@@ -121,49 +102,40 @@ jobs:
           - os: windows-2025
             python-version: 3.7
             test-env: "PyQt5~=5.12.0"
-
           - os: windows-2025
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
-
           - os: windows-2025
             python-version: 3.9
             test-env: "PyQt5~=5.15.0"
-
           - os: windows-2025
             python-version: 3.9
             test-env: "PySide6==6.8.1"
-
           - os: windows-2025
             python-version: "3.10"
             test-env: "PyQt5~=5.15.0"
-
           - os: windows-2025
             python-version: "3.10"
             test-env: "PyQt6~=6.2.3 PyQt6-Qt6~=6.2.3"
-
           - os: windows-2025
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
-
           - os: windows-2025
             python-version: "3.10"
             test-env: "PySide2~=5.15.0"
-
           - os: windows-2025
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
-
           - os: windows-2025
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
-
           - os: windows-2025
             python-version: "3.13"
             test-env: "PySide6~=6.9.1"
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -174,10 +146,14 @@ jobs:
         env:
           PACKAGES: ${{ matrix.extra-system-packages }}
         # https://www.riverbankcomputing.com/pipermail/pyqt/2020-June/042949.html
-      - name: Install dependencies
         run: |
+          # Force archive.ubuntu.com if security mirror fails
+          sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list
           sudo apt-get update --fix-missing
-          sudo apt-get install -y freeglut3-dev libglib2.0-0 libgl1 glibc-tools libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0 libxcb-cursor0 $PACKAGES
+          sudo apt-get install -y freeglut3-dev libglib2.0-0 libgl1 glibc-tools \
+            libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 \
+            libxcb-shape0 libxcb-cursor0 $PACKAGES
 
       - name: Setup Pip Cache
         uses: actions/cache@v4
@@ -211,7 +187,7 @@ jobs:
         run: catchsegv xvfb-run -a -s "$XVFBARGS" pytest -v --cov=ManyQt
 
       - name: Test import hooks
-        if: ${{ startsWith(runner.os, 'Linux') &&  matrix.qt-api == 'PyQt5' }}
+        if: ${{ startsWith(runner.os, 'Linux') && matrix.qt-api == 'PyQt5' }}
         run: |
           MANYQT_HOOK_BACKPORT=PyQt4 python -c "import ManyQt.QtCore, PyQt4"
 
