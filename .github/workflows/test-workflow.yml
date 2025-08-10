@@ -62,19 +62,16 @@ jobs:
             python-version: "3.11"
             test-env: "PyQt6~=6.5.0 PyQt6-Qt6~=6.5.0"
             qt-api: "PyQt6"
-            extra-system-packages: "glibc-tools"
 
           - os: ubuntu-24.04
             python-version: "3.12"
             test-env: "PyQt6~=6.6.0 PyQt6-Qt6~=6.6.0"
             qt-api: "PyQt6"
-            extra-system-packages: "glibc-tools"
 
           - os: ubuntu-24.04
             python-version: "3.13"
             test-env: "PySide6~=6.9.1"
             qt-api: "PySide6"
-            extra-system-packages: "glibc-tools"
 
           # macOS
           - os: macos-13
