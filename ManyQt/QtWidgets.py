@@ -367,6 +367,10 @@ try:
     QWIDGETSIZE_MAX  # Missing in older PyQt5, PyQt4
 except NameError:
     QWIDGETSIZE_MAX = (1 << 24) - 1  # type: int
+try:
+    qApp  # Missing in some editions.
+except NameError:
+    qApp = QApplication.instance()  # type: QApplication
 
 if not hasattr(QWidget, "screen"):
     def QWidget_screen(self):
@@ -1019,3 +1023,4 @@ if not hasattr(QWidget, 'setWindowFlag'):
     QWidget.setWindowFlag = QWidget.setWindowFlags
 del Signal, Slot
 apply_global_fixes(globals())
+
