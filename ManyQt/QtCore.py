@@ -711,7 +711,7 @@ if not hasattr(QSignalMapper, "mappedInt"):  # Qt < 5.15
         QSignalMapper class.
         """
         mappedInt = Signal(int)  # type: Signal
-        mappedString = Signal(str)  # type: Signal
+        mappedString = Signal('QString')  # type: Signal
         mappedObject = Signal("QObject*")  # type: Signal
         mappedWidget = Signal("QWidget*")  # type: Signal
 
