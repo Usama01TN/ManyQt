@@ -7,7 +7,7 @@ from os.path import exists, join, dirname
 import io
 
 NAME = "ManyQt"  # type: str
-VERSION = "0.3.3"  # type: str
+VERSION = "0.4.0"  # type: str
 DEVELOPER = "UsamaTN"  # type: str
 DEVELOPER_EMAIL = "ininou.oussematn@gmail.com"  # type: str
 PACKAGES = find_packages(".", include="ManyQt*")  # type: list[str]
@@ -28,3 +28,4 @@ KEYWORDS = ["GUI", "PyQt4", "PyQt5", "PyQt6", "PySide", "PySide2", "PySide6", "c
 if __name__ == "__main__":
     setup(name=NAME, version=VERSION, author=DEVELOPER, description=DESCRIPTION, long_description=README,
           license=LICENSE, keywords=KEYWORDS, classifiers=CLASSIFIERS, packages=PACKAGES)
+
