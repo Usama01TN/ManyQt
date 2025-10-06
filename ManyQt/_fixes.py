@@ -118,9 +118,15 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
         path.append(dirname(__file__))
 
     try:
-        from ._ctypes import load_qtlib
+        try:
+            from ._ctypes import load_qtlib
+        except:
+            from _ctypes import load_qtlib
     except:
-        from _ctypes import load_qtlib
+        try:
+            from ManyQt._ctypes import load_qtlib
+        except:
+            from ManyQt._ctypes import load_qtlib
 
     qtgui = load_qtlib("QtGui")
     if name == "posix":
@@ -191,9 +197,16 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
         path.append(dirname(__file__))
 
     try:
-        from ._ctypes import load_qtlib
+        try:
+            from ._ctypes import load_qtlib
+        except:
+            from _ctypes import load_qtlib
     except:
-        from _ctypes import load_qtlib
+        try:
+            from ManyQt._ctypes import load_qtlib
+        except:
+            from ManyQt._ctypes import load_qtlib
+
     qtgui = load_qtlib("QtGui")
     if name == "posix":
         _QAction_setMenuObject = qtgui['_ZN7QAction13setMenuObjectEP7QObject']
