@@ -15,6 +15,19 @@ try:
 except:
     from _api import USED_API, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYQT4, QT_API_PYSIDE, QT_API_PYSIDE2, \
         QT_API_PYSIDE6, apply_global_fixes
+try:
+    from ._helpers import qt_blurImage, qt_halfScaled, qScrollEffect, qt_graphicsItemHighlightSelected, qGeomCalc, \
+        qFadeEffect, qDrawBorderPixmap, qDrawPlainRect, qDrawPlainRect2, qDrawShadeLine, qDrawShadeLine2, \
+        qDrawShadePanel, qDrawShadePanel2, qDrawShadeRect, qDrawShadeRect2, qDrawWinButton, qDrawWinButton2, \
+        qDrawWinPanel, qDrawWinPanel2
+except:
+    try:
+        from _helpers import qt_blurImage, qt_halfScaled, qScrollEffect, qt_graphicsItemHighlightSelected, qGeomCalc, \
+            qFadeEffect, qDrawBorderPixmap, qDrawPlainRect, qDrawPlainRect2, qDrawShadeLine, qDrawShadeLine2, \
+            qDrawShadePanel, qDrawShadePanel2, qDrawShadeRect, qDrawShadeRect2, qDrawWinButton, qDrawWinButton2, \
+            qDrawWinPanel, qDrawWinPanel2
+    except:
+        pass
 
 # Names imported from Qt4's QtGui module.
 __Qt4_QtGui = [
@@ -483,7 +496,6 @@ if not hasattr(QAbstractItemView, "itemDelegateForIndex"):
 __QAbstractItemView_itemDelegate_orig = QAbstractItemView.itemDelegate
 QAbstractItemView.itemDelegate = __QAbstractItemView_itemDelegate
 
-
 if not hasattr(QStyleOption, 'init'):
     def __QStyleOption_init(self, *args, **kwargs):
         """
@@ -639,8 +651,8 @@ if not hasattr(QComboBox, "textActivated"):
         """
         QComboBox class.
         """
-        textActivated = Signal(str)  # type: Signal
-        textHighlighted = Signal(str)  # type: Signal
+        textActivated = Signal('QString')  # type: Signal
+        textHighlighted = Signal('QString')  # type: Signal
 
         def __init__(self, *args, **kwargs):
             """
@@ -1022,5 +1034,141 @@ if not hasattr(QWidget, 'devicePixelRatioF'):
 if not hasattr(QWidget, 'setWindowFlag'):
     QWidget.setWindowFlag = QWidget.setWindowFlags
 del Signal, Slot
-apply_global_fixes(globals())
 
+try:
+    QGraphicsBlurEffect
+except:
+    try:
+        from . import QtCore as _QtCore
+        from . import QtGui as _QtGui
+    except:
+        import QtCore as _QtCore
+        import QtGui as _QtGui
+
+
+    class QGraphicsBlurEffect(QGraphicsEffect):
+        """
+        QGraphicsBlurEffect class.
+        """
+
+        def __init__(self, *args, **kwargs):
+            """
+            :param args: any
+            :param kwargs: any
+            """
+            super(QGraphicsBlurEffect, self).__init__(*args, **kwargs)
+            self.__m_distance = 4.0  # type: float
+            self.__m_blurRadius = 10.0  # type: float
+            self.__m_color = _QtGui.QColor(0, 0, 0, 80)  # type: _QtGui.QColor
+
+        @_QtCore.pyqtProperty(float)
+        def distance(self):
+            """
+            :return: float | int
+            """
+            return self.__m_distance
+
+        @distance.setter
+        def distance(self, value):
+            """
+            :param value: float | int
+            :return:
+            """
+            self.__m_distance = value  # type: float
+            self.update()
+
+        @_QtCore.pyqtProperty(float)
+        def blurRadius(self):
+            """
+            :return: float | int
+            """
+            return self.__m_blurRadius
+
+        @blurRadius.setter
+        def blurRadius(self, value):
+            """
+            :param value: float | int
+            :return:
+            """
+            self.__m_blurRadius = value  # type: float
+            self.update()
+
+        @_QtCore.pyqtProperty(_QtGui.QColor)
+        def color(self):
+            """
+            :return: QColor
+            """
+            return self.__m_color
+
+        @color.setter
+        def color(self, value):
+            """
+            :param value: QColor | Qt.GlobalColor | int | str | QString
+            :return:
+            """
+            if not isinstance(value, _QtGui.QColor):
+                value = _QtGui.QColor(value)  # type: _QtGui.QColor
+            if value != self.__m_color:
+                self.__m_color = value  # type: _QtGui.QColor
+                self.update()
+
+        def draw(self, painter):
+            """
+            :param painter: QPainter
+            :return: None
+            """
+            # if nothing to show outside the item, just draw source.
+            if (self.__m_blurRadius + self.__m_distance) <= 0:
+                self.drawSource(painter)
+                return
+            px, offset = self.sourcePixmap(
+                _QtCore.Qt.DeviceCoordinates, QGraphicsEffect.PadToEffectiveBoundingRect
+            )  # type: _QtGui.QPixmap, _QtCore.QPoint
+            # Return if no source.
+            if px.isNull():
+                return
+            # Save world transform.
+            restoreTransform = painter.worldTransform()  # type: _QtGui.QTransform
+            painter.setWorldTransform(_QtGui.QTransform())
+            # Calculate size for the background image.
+            szi = _QtCore.QSize(
+                px.size().width() + 2 * self.__m_distance, px.size().height() + 2 * self.__m_distance
+            )  # type: _QtCore.QSize
+            tmp = _QtGui.QImage(szi, _QtGui.QImage.Format_ARGB32_Premultiplied)  # type: _QtGui.QImage
+            scaled = _QtGui.QPixmap(px.scaled(szi))  # type: _QtGui.QPixmap
+            tmp.fill(0)
+            tmpPainter = _QtGui.QPainter(tmp)  # type: _QtGui.QPainter
+            tmpPainter.setCompositionMode(_QtGui.QPainter.CompositionMode_Source)
+            tmpPainter.drawPixmap(_QtCore.QPointF(-self.__m_distance, -self.__m_distance), scaled)
+            tmpPainter.end()
+            # Blur the alpha channel.
+            blurred = _QtGui.QImage(tmp.size(), _QtGui.QImage.Format_ARGB32_Premultiplied)  # type: _QtGui.QImage
+            blurred.fill(0)
+            blurPainter = _QtGui.QPainter(blurred)  # type: _QtGui.QPainter
+            qt_blurImage(blurPainter, tmp, self.__m_blurRadius, False, True)
+            blurPainter.end()
+            tmp = blurred  # type: _QtGui.QImage
+            # blacken the image...
+            tmpPainter.begin(tmp)
+            tmpPainter.setCompositionMode(_QtGui.QPainter.CompositionMode_SourceIn)
+            tmpPainter.fillRect(tmp.rect(), self.__m_color)
+            tmpPainter.end()
+            # Draw the blurred shadow...
+            painter.drawImage(offset, tmp)
+            # Draw the actual pixmap...
+            painter.drawPixmap(offset, px, _QtCore.QRectF())
+            # Restore world transform.
+            painter.setWorldTransform(restoreTransform)
+
+        def boundingRectFor(self, rect):
+            """
+            :param rect: QRectF
+            :return: QRectF
+            """
+            delta = self.__m_blurRadius + self.__m_distance  # type: float
+            return rect.united(rect.adjusted(-delta, -delta, delta, delta))
+
+
+    del _QtGui, _QtCore
+
+apply_global_fixes(globals())
