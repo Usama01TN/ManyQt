@@ -69,7 +69,7 @@ jobs:
           # macOS
           - os: macos-15
             python-version: 3.13
-            test-env: "PyQt5~=5.12.0"
+            test-env: "PyQt5~=5.15.11"
           - os: macos-15
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
