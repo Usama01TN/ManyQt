@@ -522,7 +522,7 @@ if not hasattr(QStyleOption, 'initFrom'):
 
     QStyleOption.initFrom = __QStyleOption_initFrom
 
-if hasattr(QApplication, "desktop"):
+if not hasattr(QApplication, "desktop"):
     def QApplication_desktop():
         """
         :return: QDesktopWidget
@@ -534,6 +534,13 @@ if hasattr(QApplication, "desktop"):
     __QApplication_desktop = QApplication.desktop
     QApplication.desktop = staticmethod(QApplication_desktop)
     del QApplication_desktop
+
+if not hasattr(QApplication, 'exec_'):
+    QApplication.exec_ = getattr(QApplication, 'exec')
+
+if not hasattr(QApplication, 'exec'):
+    setattr(QApplication, 'exec', QApplication.exec_)
+
 
 if not hasattr(QPlainTextEdit, "setTabStopDistance"):
     def __QPlainTextEdit_setTabStopDistance(self, width):
