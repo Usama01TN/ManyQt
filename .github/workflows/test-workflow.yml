@@ -90,7 +90,7 @@ jobs:
             test-env: "PyQt6~=6.9.0 PyQt6-Qt6~=6.9.0"
           - os: macos-15
             python-version: "3.9"
-            test-env: "PySide2"
+            test-env: "PySide2==5.15.2.1"
           - os: macos-14
             python-version: "3.11"
             test-env: "PyQt6~=6.8.0 PyQt6-Qt6~=6.8.2"
