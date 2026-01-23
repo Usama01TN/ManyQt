@@ -522,7 +522,7 @@ if not hasattr(QStyleOption, 'initFrom'):
 
     QStyleOption.initFrom = __QStyleOption_initFrom
 
-if not hasattr(QApplication, "desktop"):
+if hasattr(QApplication, "desktop"):
     def QApplication_desktop():
         """
         :return: QDesktopWidget
@@ -1179,3 +1179,4 @@ except:
     del _QtGui, _QtCore
 
 apply_global_fixes(globals())
+
