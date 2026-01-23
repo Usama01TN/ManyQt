@@ -27,6 +27,7 @@ elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtSvg import QSvgWidget, QGraphicsSvgItem, QSvgRenderer, QSvgGenerator
 elif USED_API == QT_API_PYSIDE6:
     from PySide6.QtSvg import *
+    from PySide6.QtSvgWidgets import *
 else:
     raise ImportError("No module named 'QtSvgWidgets' in the selected Qt api ({})".format(USED_API))
 
