@@ -1409,10 +1409,11 @@ if 'QLibraryInfo' in globals():
     if not hasattr(QLibraryInfo, 'LibraryLocation'):
         QLibraryInfo.LibraryLocation = QLibraryInfo.LibraryPath
 
-if 'QChar' in globals():
+if 'QChar' not in globals():
     def QChar(charCode):
         """
         :param charCode: int
         :return: str | unicode | QString
         """
         return unichr(charCode) if charCode > 255 and hasattr(builtins, 'unichr') else chr(charCode)
+
