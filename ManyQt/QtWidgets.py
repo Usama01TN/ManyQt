@@ -1178,5 +1178,44 @@ except:
 
     del _QtGui, _QtCore
 
-apply_global_fixes(globals())
+if not hasattr(QSplitter, 'replaceWidget'):
+    def __QSplitter_replaceWidget(self):
+        """
+        Replace the widget at the given index with a new widget.
+        :param index: (int) Index of the widget to replace.
+        :param widget: (QWidget) New widget to insert.
+        :return: (QWidget | None) The old widget that was replaced.
+        """
+        if hasattr(super(ViewSplitter, self), 'replaceWidget'):
+            return super(ViewSplitter, self).replaceWidget(index, widget)
+        if not isinstance(widget, QWidget):
+            raise TypeError(self.tr('widget must be a QWidget'))
+        # Check if index is valid.
+        if index < 0 or index >= self.count():
+            raise IndexError(self.tr(
+                'Index {} out of range. Splitter has {} widgets.').format(index, self.count()))
+        # Get the old widget.
+        oldWidget = self.widget(index)  # type: QWidget | None
+        if oldWidget is None:
+            return None
+        # Store old widget's properties.
+        sizes = self.sizes()  # type: list[int]
+        oldSize = sizes[index] if index < len(sizes) else None  # type: int
+        # Remove old widget.
+        oldWidget.setParent(None)
+        # Insert new widget at same position.
+        self.insertWidget(index, widget)
+        # Try to restore size
+        if oldSize is not None:
+            newSizes = self.sizes()  # type: list[int]
+            if index < len(newSizes):
+                newSizes[index] = oldSize  # type: int
+                self.setSizes(newSizes)
+        # Emit signal to indicate splitter moved (if needed).
+        self.splitterMoved.emit(index, 0)
+        return oldWidget
 
+    QSplitter.replaceWidget = __QSplitter_replaceWidget
+    del __QSplitter_replaceWidget
+
+apply_global_fixes(globals())
