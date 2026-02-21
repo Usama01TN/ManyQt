@@ -280,4 +280,15 @@ def _QTest_qWait(timeout):
 if not hasattr(QTest, "qWait"):  # PySide2
     QTest.qWait = _QTest_qWait
 
+# Global methods.
+def QCOMPARE(actual, expected):
+    """
+    :param actual: object
+    :param expected: object
+    :return: bool
+    """
+    if actual != expected:
+        raise AssertionError('Expected: {}, but got: {}'.format(expected, actual))
+    return True
+
 apply_global_fixes(globals())
