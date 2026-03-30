@@ -620,7 +620,7 @@ if not hasattr(QButtonGroup, "idClicked"):
             if buttonToggled is not None:
                 self.buttonToggled.connect(buttonToggled)
 
-        @Slot(QAbstractButton)
+        # @Slot(QAbstractButton)
         def __button_clicked(self, button):
             """
             :param button: QAbstractButton
@@ -628,7 +628,7 @@ if not hasattr(QButtonGroup, "idClicked"):
             """
             self.idClicked.emit(self.id(button))
 
-        @Slot(QAbstractButton)
+        # @Slot(QAbstractButton)
         def __button_pressed(self, button):
             """
             :param button: QAbstractButton
@@ -636,7 +636,7 @@ if not hasattr(QButtonGroup, "idClicked"):
             """
             self.idPressed.emit(self.id(button))
 
-        @Slot(QAbstractButton)
+        # @Slot(QAbstractButton)
         def __button_released(self, button):
             """
             :param button: QAbstractButton
@@ -644,7 +644,7 @@ if not hasattr(QButtonGroup, "idClicked"):
             """
             self.idReleased.emit(self.id(button))
 
-        @Slot(QAbstractButton, bool)
+        # @Slot(QAbstractButton, bool)
         def __button_toggled(self, button, checked):
             """
             :param button: QAbstractButton
@@ -676,7 +676,7 @@ if not hasattr(QComboBox, "textActivated"):
             if highlighted is not None:
                 self.highlighted.connect(highlighted)
 
-        @Slot(int)
+        # @Slot(int)
         def __activated(self, index):
             """
             :param index: int
@@ -684,7 +684,7 @@ if not hasattr(QComboBox, "textActivated"):
             """
             self.textActivated.emit(self.itemText(index))
 
-        @Slot(int)
+        # @Slot(int)
         def __highlighted(self, index):
             """
             :param index: int
