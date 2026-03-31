@@ -35,7 +35,10 @@ def fix_pyqt5_QGraphicsItem_itemChange():
     https://www.riverbankcomputing.com/pipermail/pyqt/2016-February/037015.html
     :return:
     """
-    from PyQt5.QtWidgets import QGraphicsObject, QGraphicsItem
+    # Import QGraphicsObject and QGraphicsItem from PyQt5.QtWidgets
+    QtWidgets = __import__('PyQt5.QtWidgets', fromlist=['QGraphicsObject', 'QGraphicsItem'])
+    QGraphicsObject = QtWidgets.QGraphicsObject
+    QGraphicsItem = QtWidgets.QGraphicsItem
 
     class Obj(QGraphicsObject):
         """
@@ -97,7 +100,7 @@ def fix_pyqt5_QGraphicsItem_itemChange():
             return QGraphicsItem_itemChange_old(self, change, value)
 
         QGraphicsItem.itemChange = QGraphicsItem_itemChange
-        warn("Monkey patching QGraphicsItem.itemChange", RuntimeWarning)
+        warn('Monkey patching QGraphicsItem.itemChange', RuntimeWarning)
 
 
 def fix_pyqt6_qtgui_qaction_menu(namespace):
@@ -108,7 +111,7 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
     :param namespace: (dict[str | unicode, any]) The namespace dictionary where the `QAction` class is defined.
     :return: None
     """
-    if namespace.get("__name__") != "ManyQt.QtGui":
+    if namespace.get('__name__') != 'ManyQt.QtGui':
         return
     from ctypes import c_void_p
     from os.path import dirname
@@ -187,7 +190,7 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
     :param namespace: (dict[str | unicode, any]) The namespace dictionary where the `QAction` class is defined.
     :return: None
     """
-    if namespace.get("__name__") != "ManyQt.QtGui":
+    if namespace.get('__name__') != 'ManyQt.QtGui':
         return
     from ctypes import c_void_p
     from os.path import dirname
@@ -410,7 +413,7 @@ def fix_pyqt5_missing_enum_members(namespace):
                 if type(value) in types_:
                     type_ = enumTypes[qualname(type(value))]
                     if hasattr(type_, name_) and (
-                            getattr(type_, name_) != value and not "QKeySequence.StandardKey" in (
+                            getattr(type_, name_) != value and not 'QKeySequence.StandardKey' in (
                             qualname(type_))):
                         warn("{} {} is already present and is not {}".format(type_, name_, value), RuntimeWarning)
                     elif not hasattr(type_, name_):
@@ -425,7 +428,7 @@ def fix_pyside_QActionEvent_action(namespace):
     :param namespace: (dict[str | unicode, any]) The namespace dictionary where the `QActionEvent` class is defined.
     :return: None
     """
-    if namespace.get("__name__") != "ManyQt.QtGui":
+    if namespace.get('__name__') != 'ManyQt.QtGui':
         return
     from ctypes import Structure, c_void_p, c_ushort
     try:
@@ -511,9 +514,9 @@ def fix_pyside_QActionEvent_action(namespace):
         ev = _QActionEvent.from_event(self)
         return ev.before()
 
-    if not hasattr(QActionEvent, "action"):
+    if not hasattr(QActionEvent, 'action'):
         QActionEvent.action = action
-    if not hasattr(QActionEvent, "before"):
+    if not hasattr(QActionEvent, 'before'):
         QActionEvent.before = before
 
 
@@ -525,7 +528,7 @@ def fix_pyside6_QActionEvent_action(namespace):
     :param namespace: (dict[str | unicode, any]) The namespace dictionary where the `QActionEvent` class is defined.
     :return: None
     """
-    if namespace.get("__name__") != "ManyQt.QtGui":
+    if namespace.get('__name__') != 'ManyQt.QtGui':
         return
     from ctypes import Structure, c_void_p, c_ushort
     try:
@@ -554,14 +557,14 @@ def fix_pyside6_QActionEvent_action(namespace):
         _QActionEvent structure class.
         """
         _fields_ = [
-            ("vtable", c_void_p),
+            ('vtable', c_void_p),
             # QEvent
-            ("d", c_void_p),  # private data ptr
-            ("t", c_ushort),  # type
-            ("_flags", c_ushort),  # various flags
+            ('d', c_void_p),  # private data ptr
+            ('t', c_ushort),  # type
+            ('_flags', c_ushort),  # various flags
             # QActionEvent
-            ("act", c_void_p),  # QAction *act
-            ("bef", c_void_p),  # QAction *bef
+            ('act', c_void_p),  # QAction *act
+            ('bef', c_void_p),  # QAction *bef
         ]
 
         def action(self):
@@ -611,9 +614,9 @@ def fix_pyside6_QActionEvent_action(namespace):
         ev = _QActionEvent.from_event(self)
         return ev.before()
 
-    if not hasattr(QActionEvent, "action"):
+    if not hasattr(QActionEvent, 'action'):
         QActionEvent.action = action
-    if not hasattr(QActionEvent, "before"):
+    if not hasattr(QActionEvent, 'before'):
         QActionEvent.before = before
 
 
@@ -623,55 +626,54 @@ def fix_pyside_exec(namespace):
     :param namespace: dict[str | unicode, any]
     :return:
     """
-    if namespace.get("__name__") == "ManyQt.QtWidgets":
+    if namespace.get('__name__') == 'ManyQt.QtWidgets':
         from PySide2.QtWidgets import QApplication, QDialog, QMenu
-        if "exec" not in QApplication.__dict__:
-            setattr(QApplication, 'exec', lambda self: QApplication.exec_())
-        if not hasattr(QDialog, "exec"):
-            setattr(QDialog, 'exec', lambda self: QDialog.exec_(self))
-        if not hasattr(QMenu, "exec"):
-            setattr(QMenu, 'exec', lambda self: QMenu.exec_(self))
-        if "exec_" not in QApplication.__dict__:
-            setattr(QApplication, 'exec_', lambda self: getattr(QApplication, 'exec')())
-        if not hasattr(QDialog, "exec_"):
-            setattr(QDialog, 'exec_', lambda self: getattr(QDialog, 'exec')(self))
-        if not hasattr(QMenu, "exec_"):
-            setattr(QMenu, 'exec_', lambda self: getattr(QMenu, 'exec')(self))
-    if namespace.get("__name__") == "ManyQt.QtGui":
+        if 'exec' not in QApplication.__dict__:
+            setattr(QApplication, 'exec', QApplication.exec_)
+        if not hasattr(QDialog, 'exec'):
+            setattr(QDialog, 'exec', QDialog.exec_)
+        if not hasattr(QMenu, 'exec'):
+            setattr(QMenu, 'exec', QMenu.exec_)
+        if 'exec_' not in QApplication.__dict__:
+            setattr(QApplication, 'exec_', getattr(QApplication, 'exec'))
+        if not hasattr(QDialog, 'exec_'):
+            setattr(QDialog, 'exec_', getattr(QDialog, 'exec'))
+        if not hasattr(QMenu, 'exec_'):
+            setattr(QMenu, 'exec_', getattr(QMenu, 'exec'))
+    if namespace.get('__name__') == 'ManyQt.QtGui':
         from PySide2.QtGui import QGuiApplication, QDrag
         if "exec" not in QGuiApplication.__dict__:
-            setattr(QGuiApplication, 'exec', lambda self: QGuiApplication.exec_())
-        if not hasattr(QDrag, "exec"):
-            setattr(QDrag, 'exec', lambda self, *args, **kwargs: QDrag.exec_(self, *args, **kwargs))
-        if "exec_" not in QGuiApplication.__dict__:
-            setattr(QGuiApplication, 'exec_', lambda self: getattr(QGuiApplication, 'exec')())
-        if not hasattr(QDrag, "exec_"):
-            setattr(QDrag, 'exec_', lambda self, *args, **kwargs: getattr(QDrag, 'exec')(self, *args, **kwargs))
-    elif namespace.get("__name__") == "ManyQt.QtCore":
+            setattr(QGuiApplication, 'exec', QGuiApplication.exec_)
+        if not hasattr(QDrag, 'exec'):
+            setattr(QDrag, 'exec', QDrag.exec_)
+        if 'exec_' not in QGuiApplication.__dict__:
+            setattr(QGuiApplication, 'exec_', getattr(QGuiApplication, 'exec'))
+        if not hasattr(QDrag, 'exec_'):
+            setattr(QDrag, 'exec_', getattr(QDrag, 'exec'))
+    elif namespace.get('__name__') == 'ManyQt.QtCore':
         from PySide2.QtCore import QCoreApplication, QEventLoop, QThread
-        if not hasattr(QCoreApplication, "exec"):
-            setattr(QCoreApplication, 'exec', lambda self: QCoreApplication.exec_())
-        if not hasattr(QEventLoop, "exec"):
-            setattr(QEventLoop, 'exec', lambda self, *args, **kwargs: QEventLoop.exec_(self, *args, **kwargs))
-        if not hasattr(QThread, "exec"):
-            setattr(QThread, 'exec', lambda self: QThread.exec_(self))
-        if not hasattr(QCoreApplication, "exec_"):
-            setattr(QCoreApplication, 'exec_', lambda self: getattr(QCoreApplication, 'exec')())
-        if not hasattr(QEventLoop, "exec_"):
-            setattr(QEventLoop, 'exec_', lambda self, *args, **kwargs: getattr(
-                QEventLoop, 'exec')(self, *args, **kwargs))
-        if not hasattr(QThread, "exec_"):
-            setattr(QThread, 'exec_', lambda self: getattr(QThread, 'exec')(self))
-    elif namespace.get("__name__") == "ManyQt.QtPrintSupport":
+        if not hasattr(QCoreApplication, 'exec'):
+            setattr(QCoreApplication, 'exec', QCoreApplication.exec_)
+        if not hasattr(QEventLoop, 'exec'):
+            setattr(QEventLoop, 'exec', QEventLoop.exec_)
+        if not hasattr(QThread, 'exec'):
+            setattr(QThread, 'exec', QThread.exec_)
+        if not hasattr(QCoreApplication, 'exec_'):
+            setattr(QCoreApplication, 'exec_', getattr(QCoreApplication, 'exec'))
+        if not hasattr(QEventLoop, 'exec_'):
+            setattr(QEventLoop, 'exec_', getattr(QEventLoop, 'exec'))
+        if not hasattr(QThread, 'exec_'):
+            setattr(QThread, 'exec_', getattr(QThread, 'exec'))
+    elif namespace.get('__name__') == 'ManyQt.QtPrintSupport':
         from PySide2.QtPrintSupport import QPageSetupDialog, QPrintDialog
-        if "exec" not in QPageSetupDialog.__dict__:
-            setattr(QPageSetupDialog, 'exec', lambda self: QPageSetupDialog.exec_(self))
-        if "exec" not in QPrintDialog.__dict__:
-            setattr(QPrintDialog, 'exec', lambda self: QPrintDialog.exec_(self))
-        if "exec_" not in QPageSetupDialog.__dict__:
-            setattr(QPageSetupDialog, 'exec_', lambda self: getattr(QPageSetupDialog, 'exec')(self))
+        if 'exec' not in QPageSetupDialog.__dict__:
+            setattr(QPageSetupDialog, 'exec', QPageSetupDialog.exec_)
+        if 'exec' not in QPrintDialog.__dict__:
+            setattr(QPrintDialog, 'exec', QPrintDialog.exec_)
+        if 'exec_' not in QPageSetupDialog.__dict__:
+            setattr(QPageSetupDialog, 'exec_', getattr(QPageSetupDialog, 'exec'))
         if "exec_" not in QPrintDialog.__dict__:
-            setattr(QPrintDialog, 'exec_', lambda self: getattr(QPrintDialog, 'exec')(self))
+            setattr(QPrintDialog, 'exec_', getattr(QPrintDialog, 'exec'))
 
 
 def fix_qstandarditem_insert_row(namespace):
@@ -700,75 +702,76 @@ def fix_qstandarditem_insert_row(namespace):
 
 
 
-def fix_pyside6_exec(namespace):
+def fix_pyside6_exec(namespace=None):
     """
     :param namespace: dict[str | unicode, any]
     :return:
     """
-    if namespace.get("__name__") == "ManyQt.QtWidgets":
+    if not namespace:
+        namespace = {}
+    if namespace.get('__name__') == 'ManyQt.QtWidgets':
         from PySide6.QtWidgets import QApplication, QDialog, QMenu
         if "exec" not in QApplication.__dict__:
-            setattr(QApplication, 'exec', lambda self: QApplication.exec_())
-        if not hasattr(QDialog, "exec"):
-            setattr(QDialog, 'exec', lambda self: QDialog.exec_(self))
-        if not hasattr(QMenu, "exec"):
-            setattr(QMenu, 'exec', lambda self: QMenu.exec_(self))
-        if "exec_" not in QApplication.__dict__:
-            setattr(QApplication, 'exec_', lambda self: getattr(QApplication, 'exec')())
-        if not hasattr(QDialog, "exec_"):
-            setattr(QDialog, 'exec_', lambda self: getattr(QDialog, 'exec')(self))
-        if not hasattr(QMenu, "exec_"):
-            setattr(QMenu, 'exec_', lambda self: getattr(QMenu, 'exec')(self))
-    if namespace.get("__name__") == "ManyQt.QtGui":
+            setattr(QApplication, 'exec', QApplication.exec_)
+        if not hasattr(QDialog, 'exec'):
+            setattr(QDialog, 'exec', QDialog.exec_)
+        if not hasattr(QMenu, 'exec'):
+            setattr(QMenu, 'exec', QMenu.exec_)
+        if 'exec_' not in QApplication.__dict__:
+            setattr(QApplication, 'exec_', getattr(QApplication, 'exec'))
+        if not hasattr(QDialog, 'exec_'):
+            setattr(QDialog, 'exec_', getattr(QDialog, 'exec'))
+        if not hasattr(QMenu, 'exec_'):
+            setattr(QMenu, 'exec_', getattr(QMenu, 'exec'))
+    if namespace.get('__name__') == 'ManyQt.QtGui':
         from PySide6.QtGui import QGuiApplication, QDrag
-        if "exec" not in QGuiApplication.__dict__:
-            setattr(QGuiApplication, 'exec', lambda self: QGuiApplication.exec_())
-        if not hasattr(QDrag, "exec"):
-            setattr(QDrag, 'exec', lambda self, *args, **kwargs: QDrag.exec_(self, *args, **kwargs))
-        if "exec_" not in QGuiApplication.__dict__:
-            setattr(QGuiApplication, 'exec_', lambda self: getattr(QGuiApplication, 'exec')())
-        if not hasattr(QDrag, "exec_"):
-            setattr(QDrag, 'exec_', lambda self, *args, **kwargs: getattr(QDrag, 'exec')(self, *args, **kwargs))
-    elif namespace.get("__name__") == "ManyQt.QtCore":
+        if 'exec' not in QGuiApplication.__dict__:
+            setattr(QGuiApplication, 'exec', QGuiApplication.exec_)
+        if not hasattr(QDrag, 'exec'):
+            setattr(QDrag, 'exec', QDrag.exec_)
+        if 'exec_' not in QGuiApplication.__dict__:
+            setattr(QGuiApplication, 'exec_', getattr(QGuiApplication, 'exec'))
+        if not hasattr(QDrag, 'exec_'):
+            setattr(QDrag, 'exec_', getattr(QDrag, 'exec'))
+    elif namespace.get('__name__') == 'ManyQt.QtCore':
         from PySide6.QtCore import QCoreApplication, QEventLoop, QThread
-        if not hasattr(QCoreApplication, "exec"):
-            setattr(QCoreApplication, 'exec', lambda self: QCoreApplication.exec_())
-        if not hasattr(QEventLoop, "exec"):
-            setattr(QEventLoop, 'exec', lambda self, *args, **kwargs: QEventLoop.exec_(self, *args, **kwargs))
+        if not hasattr(QCoreApplication, 'exec'):
+            setattr(QCoreApplication, 'exec', QCoreApplication.exec_)
+        if not hasattr(QEventLoop, 'exec'):
+            setattr(QEventLoop, 'exec', QEventLoop.exec_)
         if not hasattr(QThread, "exec"):
-            setattr(QThread, 'exec', lambda self: QThread.exec_(self))
-        if not hasattr(QCoreApplication, "exec_"):
-            setattr(QCoreApplication, 'exec_', lambda self: getattr(QCoreApplication, 'exec')())
-        if not hasattr(QEventLoop, "exec_"):
-            setattr(QEventLoop, 'exec_', lambda self, *args, **kwargs: getattr(
-                QEventLoop, 'exec')(self, *args, **kwargs))
-        if not hasattr(QThread, "exec_"):
-            setattr(QThread, 'exec_', lambda self: getattr(QThread, 'exec')(self))
-    elif namespace.get("__name__") == "ManyQt.QtPrintSupport":
+            setattr(QThread, 'exec', QThread.exec_)
+        if not hasattr(QCoreApplication, 'exec_'):
+            setattr(QCoreApplication, 'exec_', getattr(QCoreApplication, 'exec'))
+        if not hasattr(QEventLoop, 'exec_'):
+            setattr(QEventLoop, 'exec_', getattr(QEventLoop, 'exec'))
+        if not hasattr(QThread, 'exec_'):
+            setattr(QThread, 'exec_', getattr(QThread, 'exec'))
+    elif namespace.get('__name__') == 'ManyQt.QtPrintSupport':
         from PySide6.QtPrintSupport import QPageSetupDialog, QPrintDialog
         if "exec" not in QPageSetupDialog.__dict__:
-            setattr(QPageSetupDialog, 'exec', lambda self: QPageSetupDialog.exec_(self))
+            setattr(QPageSetupDialog, 'exec', QPageSetupDialog.exec_)
         if "exec" not in QPrintDialog.__dict__:
-            setattr(QPrintDialog, 'exec', lambda self: QPrintDialog.exec_(self))
+            setattr(QPrintDialog, 'exec', QPrintDialog.exec_)
         if "exec_" not in QPageSetupDialog.__dict__:
-            setattr(QPageSetupDialog, 'exec_', lambda self: getattr(QPageSetupDialog, 'exec')(self))
+            setattr(QPageSetupDialog, 'exec_', getattr(QPageSetupDialog, 'exec'))
         if "exec_" not in QPrintDialog.__dict__:
-            setattr(QPrintDialog, 'exec_', lambda self: getattr(QPrintDialog, 'exec')(self))
+            setattr(QPrintDialog, 'exec_', getattr(QPrintDialog, 'exec'))
 
 GLOBAL_FIXES = {
-    "pyqt6": [
+    'pyqt6': [
         fix_pyqt6_unscoped_enum,
         fix_pyqt6_qtgui_qaction_menu,
     ],
-    "pyqt5": [
+    'pyqt5': [
         fix_pyqt5_missing_enum_members,
     ],
-    "pyside2": [
+    'pyside2': [
         fix_pyside_QActionEvent_action,
         fix_pyside_exec,
         fix_qstandarditem_insert_row,
     ],
-    "pyside6": [
+    'pyside6': [
         fix_pyside6_QActionEvent_action,
         fix_pyside6_exec,
         fix_qstandarditem_insert_row,
