@@ -209,7 +209,8 @@ __Qt4_QtCore = [
     'showbase',
     'uppercasebase',
     'uppercasedigits',
-    'ws'
+    'ws',
+    'QString'
 ]  # type: list[str]
 
 # Extra PyQt4 defined names mapped from PyQt4 which are not present in.
@@ -349,6 +350,7 @@ elif USED_API == QT_API_PYQT4:
     QStringListModel = _QtGui.QStringListModel
     PYSIDE_VERSION = _QtCore.PYQT_VERSION  # type: int
     PYSIDE_VERSION_STR = __version__ = _QtCore.PYQT_VERSION_STR  # type: str
+
     del _QtCore, _QtGui
 elif USED_API == QT_API_PYSIDE:
     from PySide import QtCore as _QtCore, QtGui as _QtGui
@@ -445,19 +447,674 @@ elif USED_API == QT_API_PYSIDE6:
     BoundSignal = Signal
     pyqtBoundSignal = Signal
 
+if USED_API in [QT_API_PYQT4, QT_API_PYSIDE]:
+    def _makeStrMethod(methodName):
+        """
+        :param methodName: str | unicode | QString
+        :return:
+        """
 
-def QString(text):
-    """
-    :param text: str | unicode | QString
-    :return: str | unicode
-    """
-    try:
-        return unicode(text)
-    except:
-        try:
-            return str(text)
-        except:
-            return text
+        def method(self, *args, **kwargs):
+            """
+            :param self:
+            :param args: any
+            :param kwargs: any
+            :return:
+            """
+            # Convert to Python str, call method, convert result back.
+            result = getattr(str(self), methodName)(*args, **kwargs)
+            if hasattr(result, 'encode'):
+                return QString(result)
+            elif isinstance(result, list):
+                return [QString(s) if hasattr(s, 'encode') else s for s in result]
+            return result
+        method.__name__ = methodName
+        return method
+    # str methods not already on QString.
+    for name in [m for m in dir(str) if not m.startswith('_') and not hasattr(QString, m)]:
+        setattr(QString, name, _makeStrMethod(name))
+else:
+    from re import compile, escape, IGNORECASE, findall
+    from unicodedata import normalize
+
+
+    class QString(str):
+        """
+        A Unicode string class modeled after Qt4's QString.
+        Because it subclasses str, every standard Python string method is
+        available and QString instances are accepted wherever a plain str is
+        expected.  All methods that would return a new string in the Qt API
+        return a QString here so chains stay within the Qt-style API.
+        """
+
+        # ------------------------------------------------------------------ #
+        # Construction helpers.                                              #
+        # ------------------------------------------------------------------ #
+
+        def __new__(cls, value=''):
+            """
+            :param value: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            if isinstance(value, bytes):
+                value = value.decode('utf-8', errors='replace')  # type: str
+            return QString.__new__(cls, value)
+
+        @classmethod
+        def fromUtf8(cls, data):
+            """
+            Create a QString from a UTF-8 encoded bytes object.
+            :param data: str | unicode | QString | bytes | bytearray
+            :return: str | unicode | QString
+            """
+            return cls(data.decode('utf-8', errors='replace') if isinstance(data, (bytes, bytearray)) else data)
+
+        @classmethod
+        def fromLatin1(cls, data):
+            """
+            Create a QString from a Latin-1 encoded bytes object.
+            :param data: str | unicode | QString | bytes | bytearray
+            :return: str | unicode | QString
+            """
+            return cls(data.decode('latin-1') if isinstance(data, (bytes, bytearray)) else data)
+
+        @classmethod
+        def fromLocal8Bit(cls, data):
+            """
+            Create a QString from a locale-encoded bytes object.
+            :param data: str | unicode | QString | bytes | bytearray
+            :return: str | unicode | QString
+            """
+            return cls(data.decode(errors='replace') if isinstance(data, (bytes, bytearray)) else data)
+
+        @classmethod
+        def number(cls, n, base=10):
+            """
+            Return the string representation of integer *n* in the given base.
+            :param n: int
+            :param base: int
+            :return: str | unicode | QString
+            """
+            if base == 10:
+                return cls(str(n))
+            if base == 16:
+                return cls(hex(n)[2:])
+            if base == 8:
+                return cls(oct(n)[2:])
+            if base == 2:
+                return cls(bin(n)[2:])
+            raise ValueError('Unsupported base: {}'.format(base))
+
+        # ------------------------------------------------------------------ #
+        # Encoding / conversion.                                             #
+        # ------------------------------------------------------------------ #
+
+        def toUtf8(self):
+            """
+            Return the string encoded as UTF-8 bytes (mirrors QByteArray).
+            :return: str | unicode | QString
+            """
+            return self.encode('utf-8')
+
+        def toLatin1(self):
+            """
+            Return the string encoded as Latin-1 bytes.
+            :return: str | unicode | QString
+            """
+            return self.encode('latin-1', errors='replace')
+
+        def toLocal8Bit(self):
+            """
+            Return the string encoded using the locale codec.
+            :return: str | unicode | QString
+            """
+            return self.encode(errors='replace')
+
+        def toAscii(self):
+            """
+            Return the string encoded as ASCII bytes (lossy).
+            :return: str | unicode | QString
+            """
+            return self.encode('ascii', errors='replace')
+
+        def toInt(self, base=10):
+            """
+            Parse the string as an integer.
+            Returns (value: int, ok: bool) — the same two-tuple that
+            Qt4's QString.toInt() returned.
+            :param base: int
+            :return: tuple[int, bool]
+            """
+            try:
+                return int(self.strip(), base), True
+            except ValueError:
+                return 0, False
+
+        def toDouble(self):
+            """
+            Parse the string as a double.
+            Returns (value: float, ok: bool).
+            :return: tuple[float, bool]
+            """
+            try:
+                return float(self.strip()), True
+            except ValueError:
+                return 0.0, False
+
+        def toFloat(self):
+            """
+            Parse the string as a float.
+            Returns (value: float, ok: bool).
+            :return: tuple[float, bool]
+            """
+            return self.toDouble()
+
+        def toLong(self, base=10):
+            """
+            Parse the string as a long integer. Returns (value, ok).
+            :param base: int
+            :return: long | int
+            """
+            return self.toInt(base)
+
+        def toULong(self, base=10):
+            """
+            Parse the string as an unsigned long. Returns (value, ok).
+            :param base: int
+            :return: tuple[int, bool]
+            """
+            v, ok = self.toInt(base)  # type: int, bool
+            return max(0, v), ok
+
+        def toUInt(self, base=10):
+            """
+            Parse the string as an unsigned int. Returns (value, ok).
+            :param base: int
+            :return: tuple[int, bool]
+            """
+            return self.toULong(base)
+
+        # ------------------------------------------------------------------ #
+        # QString-specific length / capacity.                                #
+        # ------------------------------------------------------------------ #
+
+        def size(self):
+            """
+            Return the number of characters (alias for len).
+            :return: int
+            """
+            return len(self)
+
+        def length(self):
+            """
+            Return the number of characters.
+            :return: int
+            """
+            return len(self)
+
+        def count(self, sub=None, start=None, end=None):  # type: ignore[override]
+            """
+            If called with no arguments, return the length (Qt semantics).
+            If called with a substring, count non-overlapping occurrences.
+            :param sub: str | unicode | QString | None
+            :param start: int | None
+            :param end: int | None
+            :return: int
+            """
+            if sub is None:
+                return len(self)
+            if start is not None and end is not None:
+                return str.count(self, sub, start, end)
+            if start is not None:
+                return str.count(self, sub, start)
+            return str.count(self, sub)
+
+        def isEmpty(self):
+            """
+            Return True if the string has no characters.
+            :return: bool
+            """
+            return len(self) == 0
+
+        def isNull(self):
+            """
+            Qt4 distinguished null from empty; Python str has no null state.
+            Always returns False for a constructed QString.
+            :return: bool
+            """
+            return False
+
+        # ------------------------------------------------------------------ #
+        # Searching.                                                         #
+        # ------------------------------------------------------------------ #
+
+        def indexOf(self, sub, from_=0, cs=True):
+            """
+            Return the index of the first occurrence of *sub* starting at
+            *from_*.  Returns -1 if not found.  Pass cs=False for a
+            case-insensitive search.
+            :param sub: str | unicode | QString
+            :param from_: int
+            :param cs: bool
+            :return: int
+            """
+            try:
+                return self if cs else self.lower().index(sub if cs else str(sub).lower(), from_)
+            except ValueError:
+                return -1
+
+        def lastIndexOf(self, sub, from_=-1, cs=True):
+            """
+            Return the index of the last occurrence of *sub*.
+            *from_* is the position to start searching backwards from.
+            Returns -1 if not found.
+            :param sub: str | unicode | QString
+            :param from_: int
+            :param cs: bool
+            :return: int
+            """
+            haystack = self if cs else self.lower()  # type: str
+            if from_ == -1 or from_ >= len(self):
+                from_ = len(self)  # type: int
+            try:
+                return haystack.rindex(sub if cs else str(sub).lower(), 0, from_)
+            except ValueError:
+                return -1
+
+        def contains(self, sub, cs=True):
+            """
+            Return True if *sub* is found in the string.
+            :param sub: str | unicode | QString
+            :param cs: bool
+            :return: bool
+            """
+            return self.indexOf(sub, cs=cs) != -1
+
+        def startsWith(self, prefix, cs=True):
+            """
+            Return True if the string starts with *prefix*.
+            :param prefix: str | unicode | QString
+            :param cs: bool
+            :return: bool
+            """
+            return self.startswith(str(prefix)) if cs else self.lower().startswith(str(prefix).lower())
+
+        def endsWith(self, suffix, cs=True):
+            """
+            Return True if the string ends with *suffix*.
+            :param suffix: str | unicode | QString
+            :param cs: bool
+            :return: bool
+            """
+            return self.endswith(str(suffix)) if cs else self.lower().endswith(str(suffix).lower())
+
+        # ------------------------------------------------------------------ #
+        # Modification (each returns a new QString).                         #
+        # ------------------------------------------------------------------ #
+
+        def append(self, other):
+            """
+            Return a new QString with *other* appended.
+            :param other: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            return QString(self + str(other))
+
+        def prepend(self, other):
+            """
+            Return a new QString with *other* prepended.
+            :param other: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            return QString(str(other) + self)
+
+        def insert(self, pos, other):
+            """
+            Return a new QString with *other* inserted at *pos*.
+            :param pos: int
+            :param other: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            s = str(self)  # type: str
+            return QString(s[:pos] + str(other) + s[pos:])
+
+        def remove(self, posOrSub, n=None, cs=True):
+            """
+            Two forms:
+              remove(pos, n)      — remove *n* characters starting at *pos*.
+              remove(sub, cs)     — remove every occurrence of *sub*.
+            :param posOrSub: str | unicode | QString
+            :param n: int | None
+            :param cs: bool
+            :return: str | unicode | QString
+            """
+            if n is not None:
+                # Positional form.
+                s = str(self)  # type: str
+                return QString(s[:posOrSub] + s[posOrSub + n:])
+            # Substring form.
+            sub = str(posOrSub)  # type: str
+            return QString(str(self).replace(sub, '') if cs else compile(escape(sub), IGNORECASE).sub('', self))
+
+        def replace(self, old, new, cs=True):  # type: ignore[override]
+            """
+            Return a new QString with occurrences of *old* replaced by *new*.
+            Pass cs=False for case-insensitive replacement.
+            :param old: str | unicode | QString
+            :param new: str | unicode | QString
+            :param cs: bool
+            :return: str | unicode | QString
+            """
+            old, new = str(old), str(new)  # type: str, str
+            return QString(str.replace(self, old, new) if cs else compile(escape(old), IGNORECASE).sub(new, self))
+
+        def mid(self, pos, n=-1):
+            """
+            Return a substring of *n* characters starting at *pos*.
+            If *n* is -1 (default) return everything from *pos* to the end.
+            :param pos: int
+            :param n: int
+            :return: str | unicode | QString
+            """
+            return QString(self[pos:] if n == -1 else self[pos: pos + n])
+
+        def left(self, n):
+            """
+            Return the first *n* characters.
+            :param n: int
+            :return: str | unicode | QString
+            """
+            return QString(self[:n])
+
+        def right(self, n):
+            """
+            Return the last *n* characters.
+            :return: str | unicode | QString
+            """
+            return QString(self[-n:] if n else '')
+
+        def trimmed(self):
+            """
+            Return a copy with leading and trailing whitespace removed.
+            :return: str | unicode | QString
+            """
+            return QString(self.strip())
+
+        def simplified(self):
+            """
+            Return a copy where each run of whitespace (including newlines and
+            tabs) is collapsed to a single space, and leading/trailing whitespace
+            is removed — identical to Qt's QString::simplified().
+            :return: str | unicode | QString
+            """
+            return QString(' '.join(self.split()))
+
+        def toUpper(self):
+            """
+            Return an upper-cased copy.
+            :return: str | unicode | QString
+            """
+            return QString(self.upper())
+
+        def toLower(self):
+            """
+            Return a lower-cased copy.
+            :return: str | unicode | QString
+            """
+            return QString(self.lower())
+
+        @classmethod
+        def casefold(cls, text=''):
+            """
+            Casefold implementation.
+            :param text: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            if not hasattr(str, 'casefold'):
+                if not hasattr(text, 'encode'):
+                    raise TypeError('expected string')
+                # Convert to unicode first.
+                if hasattr(text, 'encode'):
+                    text = text.decode('utf-8')  # type: str
+                # Convert to lowercase (basic case folding).
+                # Note: This is simplified; full case folding handles more special cases.
+                return text.lower()
+            return str.casefold(text)
+
+        def toCaseFolded(self):
+            """
+            Return a Unicode case-folded copy (useful for comparisons).
+            :return: str | unicode | QString
+            """
+            return QString(self.casefold())
+
+        def normalized(self, form='NFC'):
+            """
+            Return a Unicode normalised copy (NFC, NFD, NFKC, NFKD).
+            :param form: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            return QString(normalize(form, self))
+
+        # ------------------------------------------------------------------ #
+        # Padding / alignment                                                #
+        # ------------------------------------------------------------------ #
+
+        def leftJustified(self, width, fill=' ', truncate=False):
+            """
+            Return a string left-justified in a field of *width* characters,
+            padded with *fill*.  If *truncate* is True, crop to *width*.
+            :param width: int
+            :param fill: str | unicode | QString
+            :param truncate: bool
+            :return: str | unicode | QString
+            """
+            result = self.ljust(width, fill[0])  # type: str
+            if truncate:
+                result = result[:width]  # type: str
+            return QString(result)
+
+        def rightJustified(self, width, fill=' ', truncate=False):
+            """
+            Return a string right-justified in a field of *width* characters.
+            :param width: int
+            :param fill: str | unicode | QString
+            :param truncate: bool
+            :return: str | unicode | QString
+            """
+            result = self.rjust(width, fill[0])  # type: str
+            if truncate:
+                result = result[:width]  # type: str
+            return QString(result)
+
+        # ------------------------------------------------------------------ #
+        # Splitting / joining.                                               #
+        # ------------------------------------------------------------------ #
+
+        def split(self, sep=None, maxsplit=-1):  # type: ignore[override]
+            """
+            Split the string and return a list of QStrings.
+            Accepts a plain string or a compiled regex pattern as separator.
+            :param sep: str | unicode | QString
+            :param maxsplit: int
+            :return: list[str | unicode | QString] | QStringList
+            """
+            if sep is None:
+                parts = str.split(self)  # type: list[str]
+            elif isinstance(sep, type(compile(''))):
+                parts = sep.split(self, maxsplit if maxsplit >= 0 else 0)  # type: list[str]
+            elif maxsplit >= 0:
+                parts = str.split(self, sep, maxsplit)  # type: list[str]
+            else:
+                parts = str.split(self, sep)  # type: list[str]
+            return [QString(p) for p in parts]
+
+        # ------------------------------------------------------------------ #
+        # Comparison                                                           #
+        # ------------------------------------------------------------------ #
+
+        def compare(self, other, cs=True):
+            """
+            Compare two strings lexicographically.
+            Returns negative / zero / positive (like C strcmp).
+            Pass cs=False for case-insensitive comparison.
+            :param other: str | unicode | QString
+            :param cs: bool
+            :return: int
+            """
+            a = self if cs else self.lower()  # type: str
+            b = str(other) if cs else str(other).lower()  # type: str
+            return (a > b) - (a < b)
+
+        def localeAwareCompare(self, other):
+            """
+            Locale-aware comparison using Python's built-in collation support.
+            Falls back to basic compare when locale collation unavailable.
+            :param other: str | unicode | QString
+            :return: int
+            """
+            from locale import strcoll
+            try:
+                return strcoll(self, str(other))
+            except Exception:
+                return self.compare(other)
+
+        # ------------------------------------------------------------------ #
+        # Argument substitution  (%1, %2, … like QString::arg)               #
+        # ------------------------------------------------------------------ #
+
+        def arg(self, *values):
+            """
+            Replace the lowest-numbered %n placeholder with the first value,
+            then the next-lowest with the second, and so on — mirroring
+            QString::arg() exactly.
+            Example:
+                QString("Hello %1, you are %2 years old").arg("Alice", 30)
+                # → QString("Hello Alice, you are 30 years old")
+            :param values: any
+            :return: str | unicode | QString
+            """
+            result = str(self)  # type: str
+            for value in values:
+                # Find the lowest %n still present.
+                matches = findall(r'%(\d+)', result)
+                if not matches:
+                    break
+                result = result.replace('%{}'.format(str(min(int(m) for m in matches))), str(value), 1)  # type: str
+            return QString(result)
+
+        # ------------------------------------------------------------------ #
+        # Operators.                                                         #
+        # ------------------------------------------------------------------ #
+
+        def __add__(self, other):
+            """
+            :param other: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            return QString(str(self) + str(other))
+
+        def __radd__(self, other):
+            """
+            :param other: str | unicode | QString
+            :return: str | unicode | QString
+            """
+            return QString(str(other) + str(self))
+
+        def __mul__(self, n):
+            """
+            :param n: int
+            :return: str | unicode | QString
+            """
+            return QString(str(self) * n)
+
+        def __rmul__(self, n):
+            """
+            :param n: int
+            :return: str | unicode | QString
+            """
+            return QString(str(self) * n)
+
+        def __mod__(self, args):
+            """
+            :param args: any
+            :return: str | unicode | QString
+            """
+            return QString(str(self) % args)
+
+        def __repr__(self):
+            """
+            :return: str | unicode | QString
+            """
+            return 'QString({})'.format(str.__repr__(self))
+
+        # ------------------------------------------------------------------ #
+        # Misc Qt-isms                                                         #
+        # ------------------------------------------------------------------ #
+
+        def at(self, i):
+            """
+            Return the character at position *i* as a QString.
+            :param i: int
+            :return: str | unicode | QString
+            """
+            return QString(self[i])
+
+        def fill(self, ch, size=-1):
+            """
+            Return a QString filled with *ch* repeated *size* times.
+            If *size* is -1, use the current length.
+            :param ch: str | unicode | QString
+            :param size: int
+            :return: str | unicode | QString
+            """
+            return QString(str(ch)[0] * (size if size >= 0 else len(self)))
+
+        def chop(self, n):
+            """
+            Return a new QString with the last *n* characters removed.
+            :param n: int
+            :return: str | unicode | QString
+            """
+            return QString(self if n <= 0 else self[:-n])
+
+        def truncate(self, pos):
+            """
+            Return a new QString truncated to *pos* characters.
+            :param pos: int
+            :return: str | unicode | QString
+            """
+            return QString(self[:pos])
+
+        def section(self, sep, start, end=-1, flags=0):
+            """
+            Split the string by *sep* and return the fields from *start* to
+            *end* (inclusive), joined by *sep* — mirrors QString::section().
+            :param sep: str | unicode | QString
+            :param start: int
+            :param end: int
+            :param flags: int
+            :return: str | unicode | QString
+            """
+            parts = str(self).split(str(sep))  # type: str
+            if end == -1 or end >= len(parts):
+                end = len(parts) - 1  # type: int
+            return QString(str(sep).join(parts[start: end + 1]))
+
+        def repeated(self, times):
+            """
+            Return the string repeated *times* times.
+            :param times: int
+            :return: str | unicode | QString
+            """
+            return QString(str(self) * times)
+
+        def unicode(self):
+            """
+            Return the underlying Python str (identity operation here).
+            :return: str | unicode | QString
+            """
+            return str(self)
 
 
 if 'QVariant' not in globals():
@@ -712,8 +1369,8 @@ if not hasattr(QSignalMapper, "mappedInt"):  # Qt < 5.15
         """
         mappedInt = Signal(int)  # type: Signal
         mappedString = Signal('QString')  # type: Signal
-        mappedObject = Signal("QObject*")  # type: Signal
-        mappedWidget = Signal("QWidget*")  # type: Signal
+        mappedObject = Signal('QObject*')  # type: Signal
+        mappedWidget = Signal('QWidget*')  # type: Signal
 
         def __init__(self, *args, **kwargs):
             """
@@ -1408,15 +2065,3 @@ if 'QLibraryInfo' in globals():
         QLibraryInfo.location = QLibraryInfo.path
     if not hasattr(QLibraryInfo, 'LibraryLocation'):
         QLibraryInfo.LibraryLocation = QLibraryInfo.LibraryPath
-
-if 'QChar' not in globals():
-    import builtins
-
-    def QChar(charCode):
-        """
-        :param charCode: int
-        :return: str | unicode | QString
-        """
-        return unichr(charCode) if charCode > 255 and hasattr(builtins, 'unichr') else chr(charCode)
-
-
