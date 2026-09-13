@@ -70,7 +70,9 @@ jobs:
           - os: macos-15
             python-version: 3.13
             test-env: "PyQt5~=5.15.11"
-          - os: macos-15
+          # PyQt5 5.14 only ships x86_64 (macosx_10_13_intel) wheels, so it needs
+          # the Intel image. macos-15-intel is the last x86_64 label (until Aug 2027).
+          - os: macos-15-intel
             python-version: 3.8
             test-env: "PyQt5~=5.14.0"
           - os: macos-14
@@ -88,7 +90,8 @@ jobs:
           - os: macos-14
             python-version: "3.11"
             test-env: "PyQt6~=6.9.0 PyQt6-Qt6~=6.9.0"
-          - os: macos-15
+          # PySide2 never shipped Apple Silicon wheels (and has no sdist on PyPI).
+          - os: macos-15-intel
             python-version: "3.9"
             test-env: "PySide2==5.15.2.1"
           - os: macos-14
@@ -167,7 +170,11 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.test-env }}
           TEST_DEPS: pytest pytest-cov wheel
-        run: python -m pip install $TEST_DEPS $TEST_ENV
+        # --only-binary for the Qt bindings: without a matching wheel pip falls back
+        # to the sdist and tries to build it (which needs qmake and always fails here).
+        run: |
+          python -m pip install $TEST_DEPS
+          python -m pip install --only-binary=:all: $TEST_ENV
         shell: bash
 
       - name: Install
