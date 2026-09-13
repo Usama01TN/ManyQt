@@ -38,7 +38,7 @@ ManyQt simplifies cross-version and cross-binding development:
 - Import from `ManyQt` instead of `PyQtX` or `PySideX`.
 - Seamlessly **port between** Qt4, Qt5, and Qt6.
 - Resolve incompatibilities automatically.
-- Incrementally migrate large codebases—**module by module**.
+- Incrementally migrate large codebases **module by module**.
 
 ---
 
@@ -70,7 +70,7 @@ The active Qt binding can be set using the `QT_API` environment variable:
 | `pyside2` | PySide2 |
 | `pyside6` | PySide6 |
 
-Alternatively, you may also configure the API **programmatically**—as long as no other Qt libraries have been imported yet.
+Alternatively, you may also configure the API **programmatically** as long as no other Qt libraries have been imported yet.
 
 ---
 
