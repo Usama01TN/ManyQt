@@ -3,12 +3,13 @@
 Initialize ManyQt module.
 """
 from sys import version_info
+from os import environ
 
 __version__ = '0.4.0'  # type: str
 __PREFERRED_API = None  # type: str | None
 __SELECTED_API = None  # type: str | None
 #: A string indicating which Qt api is used (will be `None` *until* a api is selected and commited to.
-USED_API = None  # type: str | None
+USED_API = environ['QT_API']  # type: str | None
 
 
 def setpreferredapi(api):
