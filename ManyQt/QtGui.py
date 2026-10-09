@@ -594,6 +594,9 @@ if not hasattr(QImage, 'setPixelColor'):
 
     QImage.setPixelColor = QImage_setPixelColor
 
+# Alias QFont.Medium variable when it does not exists.
+if not hasattr(QFont, "Medium"):
+    QFont.Medium = QFont.Weight(500)
 # Alias QFontMetrics(F).horizontalAdvance to QFontMetrics(F).width
 # when it does not exists.
 if not hasattr(QFontMetrics, "horizontalAdvance"):
