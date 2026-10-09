@@ -594,7 +594,20 @@ if not hasattr(QImage, 'setPixelColor'):
 
     QImage.setPixelColor = QImage_setPixelColor
 
-if not hasattr(QImage, 'Format_Grayscale8'):
+if not hasattr(QImage.Format, 'Format_Grayscale8'):
+    QImage.Format.Format_Grayscale8 = 0x18
+    _original_convertToFormat = QImage.convertToFormat
+
+    def _convertToFormat(self, format, *args, **kwargs):
+        if format == QImage.Format.Format_Grayscale8:
+            image = _original_convertToFormat(self, QImage.Format.Format_Indexed8, *args, **kwargs)  # type: QImage
+            image.setColorTable([qRgb(i, i, i) for i in range(256)])
+            return image
+        return _original_convertToFormat(self, format, *args, **kwargs)
+
+
+    QImage.convertToFormat = _convertToFormat
+elif not hasattr(QImage, 'Format_Grayscale8'):
     QImage.Format_Grayscale8 = 0x18
     _original_convertToFormat = QImage.convertToFormat
 
