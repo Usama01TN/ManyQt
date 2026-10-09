@@ -607,7 +607,6 @@ if not hasattr(QImage, 'Format_Grayscale8'):
 
 
     QImage.convertToFormat = _convertToFormat
-	del _convertToFormat
 
 # Alias QFont.Medium variable when it does not exists.
 if not hasattr(QFont, "Medium"):
