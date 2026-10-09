@@ -1037,7 +1037,18 @@ except:
                 QProxyStyle, self).polish(paletteApp)
 
 if not hasattr(QWidget, 'devicePixelRatioF'):
-    QWidget.devicePixelRatioF = lambda self, x: float(self.devicePixelRatio(x))
+    def __QSWidget_devicePixelRatioF(self, ratio=None):
+        """
+        :param ratio: int | float | None
+        :return: float
+        """
+        try:
+            return float(self.devicePixelRatio(ratio))
+        except:
+            return float(self.devicePixelRatio())
+
+    QWidget.devicePixelRatioF = __QSWidget_devicePixelRatioF
+    del __QSWidget_devicePixelRatioF
 if not hasattr(QWidget, 'setWindowFlag'):
     QWidget.setWindowFlag = QWidget.setWindowFlags
 del Signal, Slot
