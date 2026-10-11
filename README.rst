@@ -124,3 +124,6 @@ of your main script:
    app.exec()
 
 ManyQt prints a warning when it detects this situation (set ``MANYQT_NO_PYDROID_CHECK=1`` to silence it).
+
+On Pydroid 3, ManyQt prefers PySide6 (Pydroid 3 >= 7.0 ships Qt6 only), and in general a binding is only selected
+if its ``QtCore`` really imports, so a leftover binding that cannot load is skipped.
