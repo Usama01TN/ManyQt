@@ -7,8 +7,6 @@ from os.path import dirname
 from warnings import warn
 from os import environ
 
-if dirname(__file__) not in path:
-    path.append(dirname(__file__))
 if dirname(dirname(__file__)) not in path:
     path.append(dirname(dirname(__file__)))
 
@@ -90,26 +88,50 @@ if USED_API is None:
     if __existing is not None:
         comittoapi(__existing)
     else:
-        available = ManyQt.availableapi()  # type: list[str]
-        __available = None  # type: str
-        if ManyQt.__PREFERRED_API is not None and ManyQt.__PREFERRED_API.lower() in [
-            name.lower() for name in available]:
-            __available = ManyQt.__PREFERRED_API.lower()  # type: str
-        elif "PyQt5" in available:
-            __available = QT_API_PYQT5  # type: str
-        elif "PyQt4" in available:
-            __available = QT_API_PYQT4  # type: str
-        elif "PySide6" in available:
-            __available = QT_API_PYSIDE6  # type: str
-        elif "PySide" in available:
-            __available = QT_API_PYSIDE  # type: str
-        elif "PySide2" in available:
-            __available = QT_API_PYSIDE2  # type: str
-        elif "PyQt6" in available:
-            __available = QT_API_PYQT6  # type: str
-        if __available is not None:
-            comittoapi(__available)
-        del __available
+        # Like qtpy: a binding is only selected if its QtCore really imports. A binding that merely *exists* on
+        # disk (e.g. a PyQt5 left over from an older Pydroid 3 that shipped Qt5) is skipped instead of being
+        # committed to, which would load two different Qt builds into the same process.
+        __PACKAGES = {QT_API_PYQT6: "PyQt6", QT_API_PYQT5: "PyQt5", QT_API_PYQT4: "PyQt4", QT_API_PYSIDE6: "PySide6",
+                      QT_API_PYSIDE2: "PySide2", QT_API_PYSIDE: "PySide"}  # type: dict[str, str]
+        __candidates = [QT_API_PYQT5, QT_API_PYQT4, QT_API_PYSIDE6, QT_API_PYSIDE, QT_API_PYSIDE2,
+                        QT_API_PYQT6]  # type: list[str]
+        try:
+            from ._pydroid import is_pydroid as __is_pydroid
+        except ImportError:
+            from ManyQt._pydroid import is_pydroid as __is_pydroid
+        if __is_pydroid():
+            # Pydroid 3 >= 7.0 ships Qt6/PySide6 only ("PyQt5 is now unavailable, PySide6 should be used instead").
+            __candidates.remove(QT_API_PYSIDE6)
+            __candidates.insert(0, QT_API_PYSIDE6)
+        del __is_pydroid
+        if ManyQt.__PREFERRED_API is not None and ManyQt.__PREFERRED_API.lower() in __candidates:
+            __candidates.remove(ManyQt.__PREFERRED_API.lower())
+            __candidates.insert(0, ManyQt.__PREFERRED_API.lower())
+
+
+        def __importable(api):
+            """
+            :param api: str
+            :return: bool
+            """
+            package = __PACKAGES[api]  # type: str
+            before = set(modules)  # type: set[str]
+            try:
+                __import__(package + ".QtCore")
+                return True
+            except Exception:
+                # Forget the half-imported package, so that comittoapi() does not see it as "already imported".
+                for name in set(modules) - before:
+                    if name == package or name.startswith(package + "."):
+                        del modules[name]
+                return False
+
+
+        for __candidate in __candidates:
+            if __importable(__candidate):
+                comittoapi(__candidate)
+                break
+        del __candidates, __PACKAGES, __importable
     del __existing
 if USED_API is None:
     raise ImportError('PyQt4, PyQt5, PyQt6, PySide, PySide2 or PySide6 are not available for import!')

@@ -66,8 +66,6 @@ def fix_pyqt5_QGraphicsItem_itemChange():
         from os.path import dirname
         from sys import path
 
-        if dirname(__file__) not in path:
-            path.append(dirname(__file__))
 
         try:
             from .sip import cast
@@ -126,8 +124,6 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
     from os.path import dirname
     from sys import path
 
-    if dirname(__file__) not in path:
-        path.append(dirname(__file__))
 
     # NOTE: never fall back to a bare ``from _ctypes import ...``: ``_ctypes`` is also the name of
     # the CPython C extension behind the ``ctypes`` module.
@@ -209,8 +205,6 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
     from os.path import dirname
     from sys import path
 
-    if dirname(__file__) not in path:
-        path.append(dirname(__file__))
 
     # NOTE: never fall back to a bare ``from _ctypes import ...``: ``_ctypes`` is also the name of
     # the CPython C extension behind the ``ctypes`` module.
@@ -344,6 +338,15 @@ def fix_pyside6_unscoped_enum(namespace):
     :param namespace: dict[str | unicode | QString, any]
     :return:
     """
+    try:
+        from PySide6.QtCore import Qt
+        if hasattr(Qt, "AlignLeft"):
+            # PySide6 already resolves old-style names itself ("forgiveness mode", PySide6 >= 6.4): nothing to do.
+            # Same as qtpy, which leaves PySide6 enums untouched; avoids touching every class at import time.
+            return
+    except ImportError:
+        return
+
     def members(enum):
         """
         :param type_: any
@@ -410,8 +413,6 @@ def fix_pyqt5_missing_enum_members(namespace):
     from enum import Enum
     from sys import path
 
-    if dirname(__file__) not in path:
-        path.append(dirname(__file__))
 
     try:
         from .sip import simplewrapper, wrappertype
@@ -472,8 +473,6 @@ def fix_pyside_QActionEvent_action(namespace):
     from os.path import dirname
     from sys import path
 
-    if dirname(__file__) not in path:
-        path.append(dirname(__file__))
 
     try:
         from .QtGui import QActionEvent
@@ -812,8 +811,6 @@ def global_fixes(namespace):
     from os.path import dirname
     from sys import path
 
-    if dirname(__file__) not in path:
-        path.append(dirname(__file__))
 
     try:
         from ._api import USED_API

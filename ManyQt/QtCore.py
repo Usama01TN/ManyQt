@@ -7,8 +7,6 @@ from platform import system, architecture, uname
 from os.path import dirname
 from sys import path
 
-if dirname(__file__) not in path:
-    path.append(dirname(__file__))
 
 try:
     from ._api import USED_API, QT_API_PYQT4, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, \
@@ -1447,28 +1445,14 @@ if USED_API in [QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6]:
     elif USED_API == QT_API_PYSIDE2:
         try:
             from PySide2 import shiboken2 as __shiboken
-        except:
-            try:
-                import sip as __shiboken
-            except:
-                import shiboken2 as __shiboken
+        except ImportError:
+            import shiboken2 as __shiboken
     elif USED_API == QT_API_PYSIDE6:
+        # Never fall back to ``sip`` here: a PyQt sip used on PySide6 objects can crash the interpreter.
         try:
             from shiboken6 import Shiboken as __shiboken
-        except:
-            try:
-                from PySide6 import sip as __shiboken
-            except:
-                try:
-                    import sip as __shiboken
-                except:
-                    try:
-                        import shiboken6 as __shiboken
-                    except:
-                        try:
-                            import PySide6.shiboken6.Shiboken as __shiboken
-                        except:
-                            import PySide6.shiboken6 as __shiboken
+        except ImportError:
+            import shiboken6 as __shiboken
     else:
         raise ImportError("ManyQt.shiboken")
 

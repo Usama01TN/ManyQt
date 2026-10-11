@@ -42,7 +42,6 @@ def selectapi(api):
         from os.path import dirname
         from sys import path
 
-        path.append(dirname(__file__))
 
         try:
             from . import _api

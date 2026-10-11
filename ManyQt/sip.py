@@ -6,8 +6,6 @@ It also contains some helper functions and classes.
 from sys import modules, path
 from os.path import dirname
 
-if dirname(__file__) not in path:
-    path.append(dirname(__file__))
 
 try:
     from ._api import USED_API, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYQT4, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6
@@ -42,59 +40,30 @@ elif USED_API == QT_API_PYSIDE:
                 import shiboken as __sip
 elif USED_API == QT_API_PYSIDE2:
     try:
-        from PySide2 import sip as __sip
-    except:
-        try:
-            import sip as __sip
-        except:
-            import shiboken2 as __sip
+        from PySide2 import shiboken2 as __sip
+    except ImportError:
+        import shiboken2 as __sip
 elif USED_API == QT_API_PYSIDE6:
+    # Never fall back to ``sip`` here: a PyQt sip used on PySide6 objects can crash the interpreter.
     try:
         from shiboken6 import Shiboken as __sip
-    except:
-        try:
-            from PySide6 import sip as __sip
-        except:
-            try:
-                import sip as __sip
-            except:
-                try:
-                    import shiboken6 as __sip
-                except:
-                    try:
-                        import PySide6.shiboken6.Shiboken as __sip
-                    except:
-                        import PySide6.shiboken6 as __sip
+    except ImportError:
+        import shiboken6 as __sip
 else:
     raise ImportError("ManyQt.sip")
 
 
-# if hasattr(__sip, 'wrapInstance') and not hasattr(__sip, 'cast'):
-#     __sip.cast = __sip.wrapInstance
-# if hasattr(__sip, 'cast') and not hasattr(__sip, 'wrapInstance'):
-#     __sip.wrapInstance = __sip.cast
-
-if not hasattr(__sip, "cast"):
-    def cast(obj, type_):
-        """
-        :param obj: QObject
-        :param type_: QObject
-        :return: QObject
-        """
-        return __sip.wrapinstance(unwrapinstance(obj), type_)
+# Like qtpy (``from shiboken6 import *``): re-export the binding's helper module, then add ManyQt's aliases
+# to *this* module only. The binding's C module itself is never modified.
+globals().update({__n: getattr(__sip, __n) for __n in dir(__sip) if not __n.startswith("_")})
+_native_getCppPointer = getattr(__sip, "getCppPointer", None)
+_native_unwrapinstance = getattr(__sip, "unwrapinstance", None) or getattr(__sip, "unwrapInstance", None)
+_native_wrapinstance = getattr(__sip, "wrapinstance", None) or getattr(__sip, "wrapInstance", None)
+_native_isdeleted = getattr(__sip, "isdeleted", None)
+_native_isValid = getattr(__sip, "isValid", None)
 
 
-    __sip.cast = cast
-
-# Bind the *native* implementations once. The fallbacks below are installed on the binding module itself, so
-# looking them up on ``__sip`` at call time would make the wrappers call themselves (infinite recursion).
-_native_getCppPointer = getattr(__sip, 'getCppPointer', None)
-_native_unwrapinstance = getattr(__sip, 'unwrapinstance', None) or getattr(__sip, 'unwrapInstance', None)
-_native_isdeleted = getattr(__sip, 'isdeleted', None)
-_native_isValid = getattr(__sip, 'isValid', None)
-
-
-def unwrapinstance(obj):
+def _unwrapinstance(obj):
     """
     :param obj: QObject
     :return: int
@@ -103,17 +72,8 @@ def unwrapinstance(obj):
         return _native_getCppPointer(obj)[0]
     return _native_unwrapinstance(obj)
 
-if not hasattr(__sip, "unwrapinstance"):
-    __sip.unwrapinstance = unwrapinstance
-if not hasattr(__sip, "unwrapInstance"):
-    __sip.unwrapInstance = unwrapinstance
-if not hasattr(__sip, "wrapinstance"):
-    __sip.wrapinstance = __sip.wrapInstance
-if not hasattr(__sip, "wrapInstance"):
-    __sip.wrapInstance = __sip.wrapinstance
 
-
-def isdeleted(obj):
+def _isdeleted(obj):
     """
     :param obj: QObject
     :return: bool
@@ -123,14 +83,28 @@ def isdeleted(obj):
     return not _native_isValid(obj)
 
 
-if not hasattr(__sip, "ispyowned"):
-    __sip.ispyowned = __sip.ownedByPython
-if not hasattr(__sip, "isdeleted"):
-    __sip.isdeleted = isdeleted
-if not hasattr(__sip, "isdelete"):
-    __sip.isdelete = isdeleted
-if not hasattr(__sip, "deleted"):
-    __sip.deleted = isdeleted
-if not hasattr(__sip, "ispycreated"):
-    __sip.ispycreated = __sip.createdByPython
-modules["ManyQt.sip"] = __sip
+def _cast(obj, type_):
+    """
+    :param obj: QObject
+    :param type_: QObject
+    :return: QObject
+    """
+    return _native_wrapinstance(_unwrapinstance(obj), type_)
+
+
+# Native implementations win; ManyQt's fallbacks only fill the gaps.
+for __alias, __fallback in (
+        ("cast", _cast),
+        ("unwrapinstance", _unwrapinstance),
+        ("unwrapInstance", _unwrapinstance),
+        ("wrapinstance", _native_wrapinstance),
+        ("wrapInstance", _native_wrapinstance),
+        ("isdeleted", _isdeleted),
+        ("isdelete", _isdeleted),
+        ("deleted", _isdeleted),
+        ("ispyowned", getattr(__sip, "ownedByPython", None)),
+        ("ispycreated", getattr(__sip, "createdByPython", None)),
+):
+    if not hasattr(__sip, __alias) and __fallback is not None:
+        globals()[__alias] = __fallback
+del __alias, __fallback

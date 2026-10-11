@@ -9,8 +9,6 @@ from itertools import chain
 from ctypes import cdll
 from glob import iglob
 
-if dirname(__file__) not in path:
-    path.append(dirname(__file__))
 
 try:
     from .QtCore import QLibraryInfo, QT_VERSION
