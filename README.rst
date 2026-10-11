@@ -103,3 +103,24 @@ Simple Usage:
    from ManyQt.QtWidgets import *
    from ManyQt.QtCore import *
    from ManyQt.QtGui import *
+
+Pydroid 3 (Android):
+^^^^^^^^^^^^^^^^^^^^
+
+Pydroid 3 decides **before** running a script whether to start it in Qt mode, by searching the script text for
+``import PySide6``, ``from PySide6`` or the comment ``#Pydroid run qt``. A script that only imports ``ManyQt`` is
+started in terminal mode, where ``QApplication([])`` or ``QGuiApplication([])`` crashes with
+``Segmentation fault``. Put this line at the top
+of your main script:
+
+.. code-block:: python
+
+   #Pydroid run qt
+   from ManyQt.QtWidgets import QApplication, QLabel
+
+   app = QApplication([])
+   label = QLabel("Hello from ManyQt")
+   label.show()
+   app.exec()
+
+ManyQt prints a warning when it detects this situation (set ``MANYQT_NO_PYDROID_CHECK=1`` to silence it).
