@@ -66,7 +66,7 @@ def fix_pyqt5_QGraphicsItem_itemChange():
         from os.path import dirname
         from sys import path
 
-        if path.append(dirname(__file__)) not in path:
+        if dirname(__file__) not in path:
             path.append(dirname(__file__))
 
         try:
@@ -113,44 +113,47 @@ def fix_pyqt6_qtgui_qaction_menu(namespace):
     """
     if namespace.get('__name__') != 'ManyQt.QtGui':
         return
+    from PyQt6.QtGui import QAction
+    if hasattr(QAction, "setMenu") and hasattr(QAction, "menu"):
+        # Native implementation available: nothing to patch. Return *before* touching any native Qt
+        # library with ctypes (loading Qt libraries a second time can crash the process, e.g. on Android).
+        return
+    try:
+        from PyQt6.QtWidgets import QMenu
+    except ImportError:
+        return  # No QtWidgets then no setMenu.
     from ctypes import c_void_p
     from os.path import dirname
     from sys import path
 
-    if path.append(dirname(__file__)) not in path:
+    if dirname(__file__) not in path:
         path.append(dirname(__file__))
 
+    # NOTE: never fall back to a bare ``from _ctypes import ...``: ``_ctypes`` is also the name of
+    # the CPython C extension behind the ``ctypes`` module.
     try:
-        try:
-            from ._ctypes import load_qtlib
-        except:
-            from _ctypes import load_qtlib
-    except:
-        try:
-            from ManyQt._ctypes import load_qtlib
-        except:
-            from ManyQt._ctypes import load_qtlib
+        from ._ctypes import load_qtlib
+    except ImportError:
+        from ManyQt._ctypes import load_qtlib
 
     qtgui = load_qtlib("QtGui")
-    if name == "posix":
-        _QAction_setMenuObject = qtgui['_ZN7QAction13setMenuObjectEP7QObject']
-        _QAction_menuObject = qtgui['_ZNK7QAction10menuObjectEv']
-    elif name == "nt":
-        _QAction_setMenuObject = qtgui['?setMenuObject@QAction@@AEAAXPEAVQObject@@@Z']
-        _QAction_menuObject = qtgui['?menuObject@QAction@@AEBAPEAVQObject@@XZ']
-    else:
-        return
+    if qtgui is None:
+        return  # Qt library not found: leave QAction untouched instead of failing the import.
+    try:
+        if name == "posix":
+            _QAction_setMenuObject = qtgui['_ZN7QAction13setMenuObjectEP7QObject']
+            _QAction_menuObject = qtgui['_ZNK7QAction10menuObjectEv']
+        elif name == "nt":
+            _QAction_setMenuObject = qtgui['?setMenuObject@QAction@@AEAAXPEAVQObject@@@Z']
+            _QAction_menuObject = qtgui['?menuObject@QAction@@AEBAPEAVQObject@@XZ']
+        else:
+            return
+    except AttributeError:
+        return  # Symbols not exported by this Qt build.
     _QAction_menuObject.argtypes = [c_void_p]
     _QAction_menuObject.restype = c_void_p
     _QAction_setMenuObject.argtypes = [c_void_p, c_void_p]
     from PyQt6.sip import isdeleted, unwrapinstance, wrapinstance
-    from PyQt6.QtGui import QAction
-    try:
-        from PyQt6.QtWidgets import QMenu
-    except:
-        return  # No QtWidgets then no setMenu
-    if hasattr(QAction, "setMenu"):
-        return
 
     def QAction_setMenu(self, menu):
         """
@@ -192,47 +195,65 @@ def fix_pyside6_qtgui_qaction_menu(namespace):
     """
     if namespace.get('__name__') != 'ManyQt.QtGui':
         return
+    from PySide6.QtGui import QAction
+    if hasattr(QAction, "setMenu") and hasattr(QAction, "menu"):
+        # PySide6 already provides QAction.setMenu()/menu(). Return *before* touching any native Qt library
+        # with ctypes: loading Qt libraries a second time at import time can crash the process later
+        # (e.g. on Android/Pydroid when QApplication is created).
+        return
+    try:
+        from PySide6.QtWidgets import QMenu
+    except ImportError:
+        return  # No QtWidgets then no setMenu.
     from ctypes import c_void_p
     from os.path import dirname
     from sys import path
 
-    if path.append(dirname(__file__)) not in path:
+    if dirname(__file__) not in path:
         path.append(dirname(__file__))
 
+    # NOTE: never fall back to a bare ``from _ctypes import ...``: ``_ctypes`` is also the name of
+    # the CPython C extension behind the ``ctypes`` module.
     try:
-        try:
-            from ._ctypes import load_qtlib
-        except:
-            from _ctypes import load_qtlib
-    except:
-        try:
-            from ManyQt._ctypes import load_qtlib
-        except:
-            from ManyQt._ctypes import load_qtlib
+        from ._ctypes import load_qtlib
+    except ImportError:
+        from ManyQt._ctypes import load_qtlib
 
     qtgui = load_qtlib("QtGui")
-    if name == "posix":
-        _QAction_setMenuObject = qtgui['_ZN7QAction13setMenuObjectEP7QObject']
-        _QAction_menuObject = qtgui['_ZNK7QAction10menuObjectEv']
-    elif name == "nt":
-        _QAction_setMenuObject = qtgui['?setMenuObject@QAction@@AEAAXPEAVQObject@@@Z']
-        _QAction_menuObject = qtgui['?menuObject@QAction@@AEBAPEAVQObject@@XZ']
-    else:
-        return
+    if qtgui is None:
+        return  # Qt library not found: leave QAction untouched instead of failing the import.
+    try:
+        if name == "posix":
+            _QAction_setMenuObject = qtgui['_ZN7QAction13setMenuObjectEP7QObject']
+            _QAction_menuObject = qtgui['_ZNK7QAction10menuObjectEv']
+        elif name == "nt":
+            _QAction_setMenuObject = qtgui['?setMenuObject@QAction@@AEAAXPEAVQObject@@@Z']
+            _QAction_menuObject = qtgui['?menuObject@QAction@@AEBAPEAVQObject@@XZ']
+        else:
+            return
+    except AttributeError:
+        return  # Symbols not exported by this Qt build.
     _QAction_menuObject.argtypes = [c_void_p]
     _QAction_menuObject.restype = c_void_p
     _QAction_setMenuObject.argtypes = [c_void_p, c_void_p]
     try:
-        from PySide6.shiboken6 import isValid as isdeleted, wrapInstance as unwrapinstance, wrapInstance as wrapinstance
-    except:
-        from shiboken6 import isValid as isdeleted, wrapInstance as unwrapinstance, wrapInstance as wrapinstance
-    from PySide6.QtGui import QAction
-    try:
-        from PySide6.QtWidgets import QMenu
-    except:
-        return  # No QtWidgets then no setMenu.
-    if hasattr(QAction, "setMenu"):
-        return
+        from shiboken6 import isValid, getCppPointer, wrapInstance as wrapinstance
+    except ImportError:
+        from PySide6.shiboken6 import isValid, getCppPointer, wrapInstance as wrapinstance
+
+    def isdeleted(obj):
+        """
+        :param obj: QObject
+        :return: bool
+        """
+        return not isValid(obj)
+
+    def unwrapinstance(obj):
+        """
+        :param obj: QObject
+        :return: int
+        """
+        return getCppPointer(obj)[0]
 
     def QAction_setMenu(self, menu):
         """
@@ -323,17 +344,6 @@ def fix_pyside6_unscoped_enum(namespace):
     :param namespace: dict[str | unicode | QString, any]
     :return:
     """
-    try:
-        from shiboken6 import wrapInstance
-    except:
-        try:
-            from PySide6.shiboken6 import wrapInstance
-        except:
-            try:
-                from PySide6.shiboken6.Shiboken import wrapInstance
-            except:
-                from shiboken6.Shiboken import wrapInstance
-
     def members(enum):
         """
         :param type_: any
@@ -342,6 +352,16 @@ def fix_pyside6_unscoped_enum(namespace):
         """
         return ((name, enum[name]) for name in enum.__members__)
 
+    def is_pyside6_type(value):
+        """
+        Only PySide6 (Shiboken) wrapper classes are touched. The namespace also contains plain Python objects
+        (e.g. ``re.IGNORECASE``), and setting attributes on those fails or corrupts them.
+        :param value: any
+        :return: bool
+        """
+        return (isinstance(value, type) and type(value).__module__ == 'Shiboken'
+                and str(getattr(value, '__module__', '')).startswith('PySide6.'))
+
     def lift_enum_namespace(type_, enum):
         """
         :param type_: any
@@ -349,7 +369,14 @@ def fix_pyside6_unscoped_enum(namespace):
         :return:
         """
         for name, value in members(enum):
-            setattr(type_, name, value)
+            # PySide6 >= 6.4 already resolves "Qt.AlignLeft"-style names itself (forgiveness mode). Never
+            # shadow an attribute that is already reachable (own, inherited, or provided by PySide6).
+            if hasattr(type_, name):
+                continue
+            try:
+                setattr(type_, name, value)
+            except (AttributeError, TypeError):
+                pass
 
     def is_unscoped_enum(value):
         """
@@ -368,7 +395,7 @@ def fix_pyside6_unscoped_enum(namespace):
         return not any(name in namespace and namespace[name] is not value for name, value in members(enum))
 
     for _, class_ in list(namespace.items()):
-        if hasattr(class_, '__dict__'):
+        if is_pyside6_type(class_):
             for name, value in list(class_.__dict__.items()):
                 if is_unscoped_enum(value):
                     if can_lift(class_, value):
@@ -383,7 +410,7 @@ def fix_pyqt5_missing_enum_members(namespace):
     from enum import Enum
     from sys import path
 
-    if path.append(dirname(__file__)) not in path:
+    if dirname(__file__) not in path:
         path.append(dirname(__file__))
 
     try:
@@ -430,6 +457,9 @@ def fix_pyside_QActionEvent_action(namespace):
     """
     if namespace.get('__name__') != 'ManyQt.QtGui':
         return
+    __QActionEvent = namespace.get('QActionEvent')
+    if __QActionEvent is None or (hasattr(__QActionEvent, 'action') and hasattr(__QActionEvent, 'before')):
+        return  # Nothing to fix (and no need to import QtWidgets from inside the QtGui import).
     from ctypes import Structure, c_void_p, c_ushort
     try:
         from PySide2.shiboken2 import wrapInstance, getCppPointer  # PySide2 < 5.12.0
@@ -442,7 +472,7 @@ def fix_pyside_QActionEvent_action(namespace):
     from os.path import dirname
     from sys import path
 
-    if path.append(dirname(__file__)) not in path:
+    if dirname(__file__) not in path:
         path.append(dirname(__file__))
 
     try:
@@ -530,27 +560,20 @@ def fix_pyside6_QActionEvent_action(namespace):
     """
     if namespace.get('__name__') != 'ManyQt.QtGui':
         return
+    QActionEvent = namespace.get('QActionEvent')
+    QAction = namespace.get('QAction')  # In Qt6 QAction lives in QtGui (no circular QtWidgets import needed).
+    if QActionEvent is None or QAction is None:
+        return
+    if hasattr(QActionEvent, 'action') and hasattr(QActionEvent, 'before'):
+        return  # PySide6 provides both natively: nothing to fix.
     from ctypes import Structure, c_void_p, c_ushort
     try:
-        from PySide6.shiboken6 import wrapInstance, getCppPointer  # PySide2 < 5.12.0
-    except:
+        from shiboken6 import wrapInstance, getCppPointer
+    except ImportError:
         try:
-            from shiboken6 import wrapInstance, getCppPointer
-        except:
+            from PySide6.shiboken6 import wrapInstance, getCppPointer
+        except ImportError:
             from shiboken6.Shiboken import wrapInstance, getCppPointer
-
-    from os.path import dirname
-    from sys import path
-
-    if path.append(dirname(__file__)) not in path:
-        path.append(dirname(__file__))
-
-    try:
-        from .QtGui import QActionEvent
-        from .QtWidgets import QAction
-    except:
-        from QtGui import QActionEvent
-        from QtWidgets import QAction
 
     class _QActionEvent(Structure):
         """
@@ -789,12 +812,12 @@ def global_fixes(namespace):
     from os.path import dirname
     from sys import path
 
-    if path.append(dirname(__file__)) not in path:
+    if dirname(__file__) not in path:
         path.append(dirname(__file__))
 
     try:
         from ._api import USED_API
-    except:
+    except ImportError:
         from _api import USED_API
     for fixer in GLOBAL_FIXES.get(USED_API, []):
         fixer(namespace)

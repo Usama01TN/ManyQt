@@ -42,8 +42,11 @@ def comittoapi(api):
     :return:
     """
     global USED_API
-    assert USED_API is None, "committoapi called again!"
     assert api in ALL_APIS
+    if USED_API is not None:
+        if USED_API == api:
+            return  # Already committed to this API (e.g. this module was imported a second time).
+        raise RuntimeError("ManyQt already committed to {}. Cannot commit to {}!".format(USED_API, api))
     for n in ["PyQt4", "PyQt5", "PyQt6", "PySide", "PySide2", "PySide6"]:
         if n.lower() != api and n in modules:
             raise RuntimeError("{} was already imported. Cannot commit to {}!".format(n, api))
@@ -135,6 +138,16 @@ try:
     from ._fixes import global_fixes as apply_global_fixes
 except:
     from _fixes import global_fixes as apply_global_fixes
+
+# Pydroid 3 (Android) decides *before* running a script whether to start it in Qt mode or in terminal mode, by
+# looking for "import PySide6" / "from PySide6" / "#Pydroid run qt" in the script text. A script that only
+# imports ManyQt is started in terminal mode, where QApplication() dies with "Segmentation fault".
+try:
+    from ._pydroid import check_pydroid_run_mode as __check_pydroid_run_mode
+except ImportError:
+    from ManyQt._pydroid import check_pydroid_run_mode as __check_pydroid_run_mode
+__check_pydroid_run_mode()
+del __check_pydroid_run_mode
 
 
 class PythonQtError(RuntimeError):

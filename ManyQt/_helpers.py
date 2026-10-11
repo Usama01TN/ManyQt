@@ -18,18 +18,50 @@ except:
     from QtGui import QBrush, QImage, QPainter
     from sip import unwrapinstance
 
-try:
-    try:
-        from ._ctypes import load_qtlib
-    except:
-        from _ctypes import load_qtlib
-except:
-    try:
-        from ManyQt._ctypes import load_qtlib
-    except:
-        from ManyQt._ctypes import load_qtlib
 
-__qtlib = load_qtlib('QtGui' if USED_API in [QT_API_PYQT4, QT_API_PYSIDE] else 'QtWidgets')
+class _LazyQtLib(object):
+    """
+    Loads the native Qt library with ctypes only when one of the helpers below is actually called.
+    Loading it eagerly (at ``import ManyQt.QtWidgets`` time) queried QLibraryInfo and dlopen()-ed Qt libraries
+    before any QApplication existed, which can load a second copy of Qt and crash the process
+    (``Segmentation fault`` at ``QApplication([])``, seen on Android/Pydroid).
+    """
+
+    def __init__(self, libName):
+        """
+        :param libName: str | unicode
+        """
+        self._libName = libName  # type: str
+        self._lib = None  # type: CDLL | None
+        self._loaded = False  # type: bool
+
+    def _load(self):
+        """
+        :return: CDLL
+        """
+        if not self._loaded:
+            self._loaded = True
+            # NOTE: never fall back to a bare ``from _ctypes import ...``: ``_ctypes`` is also the name of
+            # the CPython C extension behind the ``ctypes`` module.
+            try:
+                from ._ctypes import load_qtlib
+            except ImportError:
+                from ManyQt._ctypes import load_qtlib
+            self._lib = load_qtlib(self._libName)
+        if self._lib is None:
+            raise RuntimeError("ManyQt: the native Qt library '{}' could not be loaded, this helper is not "
+                               "available on this platform.".format(self._libName))
+        return self._lib
+
+    def __getitem__(self, symbol):
+        """
+        :param symbol: str | unicode
+        :return: any
+        """
+        return self._load()[symbol]
+
+
+__qtlib = _LazyQtLib('QtGui' if USED_API in [QT_API_PYQT4, QT_API_PYSIDE] else 'QtWidgets')
 if platform.lower() in ['win32', 'win64', 'windows']:
     __references = {
         "_blurImagePainter": "?qt_blurImage@@YAXPEAVQPainter@@AEAVQImage@@N_N2H@Z",

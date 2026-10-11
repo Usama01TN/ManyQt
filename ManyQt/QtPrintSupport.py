@@ -9,10 +9,10 @@ if dirname(__file__) not in path:
     path.append(dirname(__file__))
 
 try:
-    from ._api import USED_API, QT_API_PYQT4, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, \
+    from ._api import USED_API, QT_API_PYQT4, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, \
         apply_global_fixes
 except:
-    from _api import USED_API, QT_API_PYQT4, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, \
+    from _api import USED_API, QT_API_PYQT4, QT_API_PYQT6, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, \
         apply_global_fixes
 
 # Names imported from Qt'4 QtGui module.
@@ -54,6 +54,8 @@ elif USED_API == QT_API_PYSIDE:
     )
 elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtPrintSupport import *
+elif USED_API == QT_API_PYSIDE6:
+    from PySide6.QtPrintSupport import *
 else:
     raise ImportError("No module named 'QtPrintSupport' in the selected Qt api ({})".format(USED_API))
 

@@ -86,15 +86,22 @@ if not hasattr(__sip, "cast"):
 
     __sip.cast = cast
 
+# Bind the *native* implementations once. The fallbacks below are installed on the binding module itself, so
+# looking them up on ``__sip`` at call time would make the wrappers call themselves (infinite recursion).
+_native_getCppPointer = getattr(__sip, 'getCppPointer', None)
+_native_unwrapinstance = getattr(__sip, 'unwrapinstance', None) or getattr(__sip, 'unwrapInstance', None)
+_native_isdeleted = getattr(__sip, 'isdeleted', None)
+_native_isValid = getattr(__sip, 'isValid', None)
+
+
 def unwrapinstance(obj):
     """
     :param obj: QObject
-    :return: QObject
+    :return: int
     """
-    if hasattr(__sip, 'getCppPointer'):
-        addr, = __sip.getCppPointer(obj)
-        return addr
-    return __sip.unwrapInstance(obj)
+    if _native_getCppPointer is not None:
+        return _native_getCppPointer(obj)[0]
+    return _native_unwrapinstance(obj)
 
 if not hasattr(__sip, "unwrapinstance"):
     __sip.unwrapinstance = unwrapinstance
@@ -111,9 +118,9 @@ def isdeleted(obj):
     :param obj: QObject
     :return: bool
     """
-    if hasattr(__sip, "isdeleted"):
-        return __sip.isdeleted(obj)
-    return not __sip.isValid(obj)
+    if _native_isdeleted is not None:
+        return _native_isdeleted(obj)
+    return not _native_isValid(obj)
 
 
 if not hasattr(__sip, "ispyowned"):
@@ -124,8 +131,6 @@ if not hasattr(__sip, "isdelete"):
     __sip.isdelete = isdeleted
 if not hasattr(__sip, "deleted"):
     __sip.deleted = isdeleted
-if not hasattr(__sip, "delete"):
-    __sip.delete = isdeleted
 if not hasattr(__sip, "ispycreated"):
     __sip.ispycreated = __sip.createdByPython
 modules["ManyQt.sip"] = __sip

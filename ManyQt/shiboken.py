@@ -84,17 +84,22 @@ if not hasattr(__shiboken, "cast"):
 
     __shiboken.cast = cast
 
+# Bind the *native* implementations once. The fallbacks below are installed on the binding module itself, so
+# looking them up on ``__shiboken`` at call time would make the wrappers call themselves (infinite recursion).
+_native_getCppPointer = getattr(__shiboken, 'getCppPointer', None)
+_native_unwrapinstance = getattr(__shiboken, 'unwrapinstance', None) or getattr(__shiboken, 'unwrapInstance', None)
+_native_isdeleted = getattr(__shiboken, 'isdeleted', None)
+_native_isValid = getattr(__shiboken, 'isValid', None)
+
+
 def unwrapinstance(obj):
     """
     :param obj: QObject
-    :return: QObject
+    :return: int
     """
-    if hasattr(__shiboken, 'getCppPointer'):
-        addr, = __shiboken.getCppPointer(obj)
-        return addr
-    elif hasattr(__shiboken, 'unwrapInstance'):
-        return __shiboken.unwrapInstance(obj)
-    return __shiboken.unwrapinstance(obj)
+    if _native_getCppPointer is not None:
+        return _native_getCppPointer(obj)[0]
+    return _native_unwrapinstance(obj)
 
 if not hasattr(__shiboken, "unwrapinstance"):
     __shiboken.unwrapinstance = unwrapinstance
@@ -111,9 +116,9 @@ def isdeleted(obj):
     :param obj: QObject
     :return: bool
     """
-    if hasattr(__shiboken, "isdeleted"):
-        return __shiboken.isdeleted(obj)
-    return not __shiboken.isValid(obj)
+    if _native_isdeleted is not None:
+        return _native_isdeleted(obj)
+    return not _native_isValid(obj)
 
 
 if not hasattr(__shiboken, "ispyowned"):
@@ -124,8 +129,6 @@ if not hasattr(__shiboken, "isdelete"):
     __shiboken.isdelete = isdeleted
 if not hasattr(__shiboken, "deleted"):
     __shiboken.deleted = isdeleted
-if not hasattr(__shiboken, "delete"):
-    __shiboken.delete = isdeleted
 if not hasattr(__shiboken, "ispycreated"):
     __shiboken.ispycreated = __shiboken.createdByPython
 modules["ManyQt.shiboken"] = __shiboken

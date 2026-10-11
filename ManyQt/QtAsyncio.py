@@ -34,9 +34,11 @@ elif USED_API == QT_API_PYSIDE2:
 elif USED_API == QT_API_PYSIDE6:
     try:
         from PySide6.QtAsyncio import *
-    except:
+    except ImportError:
         raise QtModuleNotInstalledError(
             name="QtAsyncio", missing_package="PySide6-Addons or PySide6-QtAds or qt-async-threads")
+    # QtAsyncio.run() is the documented entry point, but PySide6 leaves it out of __all__.
+    from PySide6.QtAsyncio import run
 else:
     raise ImportError("No module named 'QtAsyncio' in the selected Qt api ({})".format(USED_API))
 

@@ -10,10 +10,10 @@ if dirname(__file__) not in path:
     path.append(dirname(__file__))
 
 try:
-    from ._api import USED_API, QT_API_PYQT6, QT_API_PYQT4, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE6, \
+    from ._api import USED_API, QT_API_PYQT6, QT_API_PYQT4, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, \
         apply_global_fixes, QtModuleNotInstalledError
 except:
-    from _api import USED_API, QT_API_PYQT6, QT_API_PYQT4, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE6, \
+    from _api import USED_API, QT_API_PYQT6, QT_API_PYQT4, QT_API_PYQT5, QT_API_PYSIDE, QT_API_PYSIDE2, QT_API_PYSIDE6, \
         apply_global_fixes, QtModuleNotInstalledError
 
 if USED_API == QT_API_PYQT4:
@@ -24,7 +24,7 @@ elif USED_API == QT_API_PYQT5:
     from PyQt5.QtVirtualKeyboard import *
 elif USED_API == QT_API_PYQT6:
     from PyQt6.QtVirtualKeyboard import *
-if USED_API == QT_API_PYSIDE:
+elif USED_API == QT_API_PYSIDE:
     from PySide.QtVirtualKeyboard import *
 elif USED_API == QT_API_PYSIDE2:
     from PySide2.QtVirtualKeyboard import *
